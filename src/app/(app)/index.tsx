@@ -1,6 +1,8 @@
+import { faShareNodes } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, Share, StyleSheet } from 'react-native';
+import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -75,11 +77,16 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => router.push({ pathname: '/group/[id]', params: { id: item.id } })}>
               <ThemedView type="backgroundElement" style={styles.card}>
-                <ThemedText type="smallBold">{item.name}</ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
-                </ThemedText>
+                <View style={styles.cardText}>
+                  <ThemedText type="smallBold">{item.name}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
+                  </ThemedText>
+                </View>
                 <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('groups.shareCode')}
+                  hitSlop={12}
                   onPress={() =>
                     Share.share({
                       message: t('groups.shareMessage', { name: item.name, code: item.invite_code }),
@@ -87,7 +94,7 @@ export default function HomeScreen() {
                       // the share sheet failed to open: nothing useful to tell the user
                     })
                   }>
-                  <ThemedText type="link">{t('groups.shareCode')}</ThemedText>
+                  <FontAwesomeIcon icon={faShareNodes} size={18} color={theme.text} />
                 </Pressable>
               </ThemedView>
             </Pressable>
@@ -122,10 +129,14 @@ const styles = StyleSheet.create({
   },
   list: { gap: Spacing.two },
   card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Spacing.three,
     borderRadius: Spacing.three,
     padding: Spacing.three,
-    gap: Spacing.one,
   },
+  cardText: { flex: 1, gap: Spacing.one },
   button: {
     borderRadius: Spacing.three,
     paddingVertical: Spacing.three,

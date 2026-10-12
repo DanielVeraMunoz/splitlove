@@ -3,6 +3,7 @@
 // shape (`Translations`), so TypeScript also flags a language missing a text.
 export const es = {
   common: {
+    close: 'Cerrar',
     networkError: 'Algo ha salido mal. Revisa tu conexión e inténtalo de nuevo.',
   },
   tabs: {

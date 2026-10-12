@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ScrollView, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
@@ -88,12 +88,12 @@ export default function NewEntryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.form}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="subtitle">{t('entries.newTitle')}</ThemedText>
-
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <ScrollView
+          contentContainerStyle={styles.form}
+          // iOS: scroll content above the keyboard by itself (no header height needed)
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled">
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
             placeholder={t('entries.labelPlaceholder')}
@@ -136,7 +136,7 @@ export default function NewEntryScreen() {
             loading={loading}
             disabled={!label.trim() || !author}
           />
-        </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -171,7 +171,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   form: {
-    flex: 1,
     gap: Spacing.three,
     padding: Spacing.four,
   },

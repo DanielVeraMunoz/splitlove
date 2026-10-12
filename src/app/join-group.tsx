@@ -2,8 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  ScrollView,
   Pressable,
   StyleSheet,
   TextInput,
@@ -52,12 +51,12 @@ export default function JoinGroupScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          style={styles.form}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="subtitle">{t('groups.joinTitle')}</ThemedText>
-
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <ScrollView
+          contentContainerStyle={styles.form}
+          // iOS: scroll content above the keyboard by itself (no header height needed)
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled">
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
             placeholder={t('groups.codePlaceholder')}
@@ -81,7 +80,7 @@ export default function JoinGroupScreen() {
               <ThemedText style={{ color: theme.background }}>{t('groups.joinAction')}</ThemedText>
             )}
           </Pressable>
-        </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -91,7 +90,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   form: {
-    flex: 1,
     gap: Spacing.three,
     padding: Spacing.four,
   },
