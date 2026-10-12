@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { BalanceSummary, type Debt, type MemberPoints } from '@/components/balance-summary';
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -31,6 +32,8 @@ export default function GroupScreen() {
   const [groupName, setGroupName] = useState('');
   const [names, setNames] = useState<Record<string, string>>({});
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [points, setPoints] = useState<MemberPoints[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +41,8 @@ export default function GroupScreen() {
   const load = useCallback(() => {
     let ignore = false;
 
-    // Three independent queries, run in parallel
+    // Independent queries, run in parallel. The two views are computed by the
+    // database from the entries, so they can never disagree with the list.
     Promise.all([
       supabase.from('groups').select('name').eq('id', id).single(),
       supabase.from('group_members').select('user_id, profiles(display_name)').eq('group_id', id),
@@ -48,10 +52,12 @@ export default function GroupScreen() {
         .eq('group_id', id)
         .is('voided_at', null)
         .order('created_at', { ascending: false }),
+      supabase.from('member_points').select('user_id, points_done').eq('group_id', id),
+      supabase.from('pair_debts').select('creditor_id, debtor_id, points').eq('group_id', id),
     ]).then(
-      ([group, members, entryRows]) => {
+      ([group, members, entryRows, pointRows, debtRows]) => {
         if (ignore) return;
-        if (group.error || members.error || entryRows.error) {
+        if (group.error || members.error || entryRows.error || pointRows.error || debtRows.error) {
           setError(t('entries.loadError'));
         } else {
           setError(null);
@@ -65,6 +71,8 @@ export default function GroupScreen() {
             ),
           );
           setEntries(entryRows.data as Entry[]);
+          setPoints(pointRows.data as MemberPoints[]);
+          setDebts(debtRows.data as Debt[]);
         }
         setLoading(false);
       },
@@ -135,6 +143,9 @@ export default function GroupScreen() {
           keyExtractor={(entry) => entry.id}
           contentContainerStyle={styles.list}
           stickySectionHeadersEnabled={false}
+          ListHeaderComponent={
+            loading ? null : <BalanceSummary myId={myId} names={names} points={points} debts={debts} />
+          }
           ListEmptyComponent={
             loading ? null : (
               <ThemedText themeColor="textSecondary">{t('entries.empty')}</ThemedText>

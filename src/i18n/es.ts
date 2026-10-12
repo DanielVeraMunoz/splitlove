@@ -47,6 +47,17 @@ export const es = {
     cancel: 'Cancelar',
     loadError: 'No se ha podido cargar el grupo. Revisa tu conexión.',
   },
+  points: {
+    one: '1 punto',
+    other: '{{count}} puntos',
+  },
+  balance: {
+    pointsDone: 'Puntos',
+    youOwe: 'Debes {{points}} a {{name}}',
+    owesYou: '{{name}} te debe {{points}}',
+    owes: '{{debtor}} debe {{points}} a {{creditor}}',
+    even: 'Estáis a la par.',
+  },
   groups: {
     yourGroups: 'Tus grupos',
     empty: 'Aún no tienes grupos. Crea uno para empezar a contar.',
