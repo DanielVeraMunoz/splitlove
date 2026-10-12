@@ -7,8 +7,9 @@ import { GroupKindIcon } from '@/components/group-kind-icon';
 import { IconBadge } from '@/components/icon-badge';
 import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
+import { Wordmark } from '@/components/wordmark';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { t } from '@/i18n';
 import { totalsByGroup, type DebtRow } from '@/lib/balance';
 import { formatPoints } from '@/lib/format';
@@ -79,7 +80,10 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="subtitle">{t('groups.yourGroups')}</ThemedText>
+        <View style={styles.header}>
+          <Wordmark size={22} />
+          <ThemedText type="subtitle">{t('groups.yourGroups')}</ThemedText>
+        </View>
 
         {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
@@ -118,11 +122,15 @@ export default function HomeScreen() {
         <Button label={t('groups.create')} onPress={() => router.push('/new-group')} />
 
         <Pressable onPress={() => router.push('/join-group')}>
-          <ThemedText type="link">{t('groups.join')}</ThemedText>
+          <ThemedText type="link" style={styles.centered}>
+            {t('groups.join')}
+          </ThemedText>
         </Pressable>
 
         <Pressable onPress={() => supabase.auth.signOut()}>
-          <ThemedText type="link">{t('auth.signOut')}</ThemedText>
+          <ThemedText type="link" style={styles.centered}>
+            {t('auth.signOut')}
+          </ThemedText>
         </Pressable>
       </SafeAreaView>
     </ThemedView>
@@ -157,6 +165,8 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     alignItems: 'stretch',
   },
+  header: { gap: Spacing.one },
+  centered: { textAlign: 'center' },
   list: { gap: Spacing.two },
   card: {
     flexDirection: 'row',
@@ -167,5 +177,5 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
   },
   cardText: { flex: 1, gap: Spacing.one },
-  total: { fontSize: 22, lineHeight: 30 },
+  total: { fontFamily: FontFamily.display, fontSize: 24, lineHeight: 32 },
 });

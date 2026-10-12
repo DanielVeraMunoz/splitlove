@@ -35,6 +35,15 @@ export const Colors = {
   },
 } as const;
 
+// Google Fonts bake the weight into the family name, so we pick a weight by picking a
+// family (never with `fontWeight`, which fakes bold on top of a font that already has it).
+// They are loaded in src/app/_layout.tsx.
+export const FontFamily = {
+  body: 'Nunito_500Medium',
+  bodyBold: 'Nunito_700Bold',
+  display: 'Fredoka_600SemiBold', // titles and numbers
+} as const;
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({

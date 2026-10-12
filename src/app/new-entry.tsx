@@ -7,7 +7,7 @@ import { Button } from '@/components/button';
 import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { t } from '@/i18n';
 import { CATEGORY_IDS, detectCategory, type CategoryId } from '@/lib/categories';
@@ -198,6 +198,7 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
+    fontFamily: FontFamily.body,
     fontSize: 16,
   },
   chips: {

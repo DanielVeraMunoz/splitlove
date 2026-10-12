@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ButtonProps = {
@@ -23,7 +23,9 @@ export function Button({ label, onPress, loading = false, disabled = false }: Bu
       {loading ? (
         <ActivityIndicator color={theme.onAccent} />
       ) : (
-        <ThemedText style={{ color: theme.onAccent }}>{label}</ThemedText>
+        <ThemedText style={{ color: theme.onAccent, fontFamily: FontFamily.bodyBold }}>
+          {label}
+        </ThemedText>
       )}
     </Pressable>
   );

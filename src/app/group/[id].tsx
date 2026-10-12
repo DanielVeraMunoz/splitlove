@@ -14,7 +14,7 @@ import { IconBadge } from '@/components/icon-badge';
 import { ShareGroupButton } from '@/components/share-group-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
 import { formatPoints } from '@/lib/format';
@@ -349,7 +349,7 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
   rowText: { flex: 1 },
-  points: { fontSize: 20, lineHeight: 28 },
+  points: { fontFamily: FontFamily.display, fontSize: 22, lineHeight: 30 },
   // room so the floating button never hides the last entry
   listWithFab: { paddingBottom: FAB_SIZE + FAB_OFFSET + Spacing.four },
   fabWrapper: {

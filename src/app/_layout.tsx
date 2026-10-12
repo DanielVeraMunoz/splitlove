@@ -1,10 +1,13 @@
+import { Fredoka_600SemiBold } from '@expo-google-fonts/fredoka';
+import { Nunito_500Medium, Nunito_700Bold } from '@expo-google-fonts/nunito';
+import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import { Colors } from '@/constants/theme';
+import { Colors, FontFamily } from '@/constants/theme';
 import { CloseButton } from '@/components/close-button';
 import { t } from '@/i18n';
 import { SessionProvider, useSession } from '@/lib/session';
@@ -48,7 +51,7 @@ function RootNavigator() {
   if (isLoading) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false, headerTitleStyle: { fontFamily: FontFamily.display } }}>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="group/[id]" options={{ headerShown: true, title: '' }} />
@@ -65,6 +68,12 @@ function RootNavigator() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [fontsLoaded, fontsError] = useFonts({ Fredoka_600SemiBold, Nunito_500Medium, Nunito_700Bold });
+
+  // The native splash stays up (preventAutoHideAsync above) until the fonts are ready.
+  // If they fail to load we carry on with system fonts instead of a blank screen.
+  if (!fontsLoaded && !fontsError) return null;
+
   return (
     // Swipe gestures need this wrapper at the root of the app
     <GestureHandlerRootView style={{ flex: 1 }}>
