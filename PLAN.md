@@ -31,6 +31,21 @@ Idea for later (like Splitwise): the free tier limits how many entries you can l
 premium removes the limit (the number is still to be decided). It has to be enforced
 server-side, because a limit in the app is trivial to bypass.
 
+## Navigation
+
+Custom bottom bar (the native one can't host a button in the middle that isn't a tab):
+**Inicio | Grupos | (+) | Actividad | Perfil**.
+
+- **(+)** logs an action. From outside a group it asks which group (skipped with a single group;
+  with none it offers to create one). Inside a group the group is already chosen.
+- **Inicio**: dashboard. For now your total across all groups; charts (points per member per
+  month, as a line) and medals come later.
+- **Grupos**: the list of groups.
+- **Actividad**: feed of what happened in your groups (later also notifications).
+- **Perfil**: your data (name, email, description, your color) and the app settings (language;
+  notifications need a real build). Deleting your account has to be possible from here:
+  Apple requires it for apps with sign-up (check their guideline before submitting).
+
 ## Stack
 
 Expo (React Native) + TypeScript + Expo Router, Supabase (Postgres, auth, RLS),

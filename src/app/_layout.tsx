@@ -58,6 +58,7 @@ function RootNavigator() {
         <Stack.Screen name="(app)" />
         <Stack.Screen name="group/[id]" options={{ headerShown: true, title: '' }} />
         <Stack.Screen name="new-entry" options={modalOptions(t('entries.newTitle'))} />
+        <Stack.Screen name="pick-group" options={modalOptions(t('groups.pickTitle'))} />
         <Stack.Screen name="new-group" options={modalOptions(t('groups.newTitle'))} />
         <Stack.Screen name="join-group" options={modalOptions(t('groups.joinTitle'))} />
       </Stack.Protected>
