@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { useCelebration } from '@/components/celebration';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontFamily, Spacing } from '@/constants/theme';
@@ -20,6 +21,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function NewGroupScreen() {
   const theme = useTheme();
+  const { celebrate } = useCelebration();
   const [name, setName] = useState('');
   const [kind, setKind] = useState<GroupKind | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,6 +39,7 @@ export default function NewGroupScreen() {
         p_kind: kind,
       });
       if (!rpcError) {
+        celebrate();
         router.back();
         return; // the screen is closing: don't touch its state any more
       }

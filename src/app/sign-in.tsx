@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { useCelebration } from '@/components/celebration';
 import { Wordmark } from '@/components/wordmark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,6 +20,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function SignInScreen() {
   const theme = useTheme();
+  const { celebrate } = useCelebration();
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -44,9 +46,11 @@ export default function SignInScreen() {
         if (error) setMessage(error.message);
         // With email confirmation enabled there is no session until the link is opened
         else if (!data.session) setMessage(t('auth.checkEmail'));
+        else celebrate();
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) setMessage(error.message);
+        else celebrate();
       }
     } catch {
       // network failures reject instead of returning { error }

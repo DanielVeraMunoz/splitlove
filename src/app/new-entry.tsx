@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
 import { CategoryIcon } from '@/components/category-icon';
+import { useCelebration } from '@/components/celebration';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontFamily, Spacing } from '@/constants/theme';
@@ -21,6 +22,7 @@ type Member = { user_id: string; name: string };
 export default function NewEntryScreen() {
   const theme = useTheme();
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { celebrate } = useCelebration();
   const { session } = useSession();
   const myId = session?.user.id;
 
@@ -80,6 +82,7 @@ export default function NewEntryScreen() {
         points,
       });
       if (!insertError) {
+        celebrate();
         router.back();
         return; // the screen is closing: don't touch its state any more
       }
