@@ -91,7 +91,9 @@ export default function GroupScreen() {
         month: 'long',
         year: 'numeric',
       });
-      byMonth.set(title, [...(byMonth.get(title) ?? []), entry]);
+      const bucket = byMonth.get(title);
+      if (bucket) bucket.push(entry);
+      else byMonth.set(title, [entry]);
     }
     return [...byMonth].map(([title, data]) => ({ title, data }));
   }, [entries]);
@@ -107,14 +109,19 @@ export default function GroupScreen() {
     // Entries are never deleted: voiding keeps the history. .select() lets us
     // see whether the database actually changed a row (RLS silently skips ones
     // you don't own).
-    const { data, error: updateError } = await supabase
-      .from('entries')
-      .update({ voided_at: new Date().toISOString() })
-      .eq('id', entry.id)
-      .select('id');
+    try {
+      const { data, error: updateError } = await supabase
+        .from('entries')
+        .update({ voided_at: new Date().toISOString() })
+        .eq('id', entry.id)
+        .select('id');
 
-    if (updateError || !data?.length) Alert.alert(t('entries.voidFailed'));
-    else load();
+      if (updateError) Alert.alert(t('common.networkError'));
+      else if (!data?.length) Alert.alert(t('entries.voidFailed')); // RLS skipped it: not yours
+      else load();
+    } catch {
+      Alert.alert(t('common.networkError'));
+    }
   }
 
   return (

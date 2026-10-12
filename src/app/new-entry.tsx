@@ -23,13 +23,15 @@ export default function NewEntryScreen() {
 
   const [members, setMembers] = useState<Member[]>([]);
   const [label, setLabel] = useState('');
-  const [authorId, setAuthorId] = useState<string | undefined>(myId);
+  // undefined = nobody picked yet: it falls back to me (see `author`)
+  const [authorId, setAuthorId] = useState<string | undefined>(undefined);
   // null = nobody chose: follow the detector while the user types
   const [manualCategory, setManualCategory] = useState<CategoryId | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const category = manualCategory ?? detectCategory(label);
+  const author = authorId ?? myId;
 
   useEffect(() => {
     let ignore = false;
@@ -38,8 +40,12 @@ export default function NewEntryScreen() {
       .select('user_id, profiles(display_name)')
       .eq('group_id', groupId)
       .then(
-        ({ data }) => {
-          if (ignore || !data) return;
+        ({ data, error: queryError }) => {
+          if (ignore) return;
+          if (queryError || !data) {
+            setError(t('common.networkError'));
+            return;
+          }
           setMembers(
             (data as unknown as { user_id: string; profiles: { display_name: string } | null }[]).map(
               (row) => ({ user_id: row.user_id, name: row.profiles?.display_name ?? '?' }),
@@ -56,14 +62,14 @@ export default function NewEntryScreen() {
   }, [groupId]);
 
   async function save() {
-    if (!myId || !authorId) return;
+    if (!myId || !author) return;
     setLoading(true);
     setError(null);
 
     try {
       const { error: insertError } = await supabase.from('entries').insert({
         group_id: groupId,
-        author_id: authorId, // who DID it
+        author_id: author, // who DID it
         created_by: myId, // who LOGGED it (RLS requires it to be you)
         label: label.trim(),
         category,
@@ -113,7 +119,7 @@ export default function NewEntryScreen() {
             {members.map((member) => (
               <Chip
                 key={member.user_id}
-                selected={member.user_id === authorId}
+                selected={member.user_id === author}
                 label={member.user_id === myId ? t('entries.you') : member.name}
                 onPress={() => setAuthorId(member.user_id)}
               />
@@ -126,7 +132,7 @@ export default function NewEntryScreen() {
             label={t('entries.save')}
             onPress={save}
             loading={loading}
-            disabled={!label.trim() || !authorId}
+            disabled={!label.trim() || !author}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>

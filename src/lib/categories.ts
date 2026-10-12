@@ -39,20 +39,22 @@ export const CATEGORIES: Record<CategoryId, Category> = {
     stems: ['limpi', 'bano', 'aspir', 'fregar', 'friega', 'plato', 'lavavajilla', 'barrer', 'polvo', 'basura'],
     exact: [],
   },
-  laundry: {
-    emoji: '🧺',
-    stems: ['lavadora', 'tender', 'tendi', 'planch', 'ropa', 'colada', 'doblar'],
-    exact: [],
-  },
+  // before laundry, so "Reparar la lavadora" is a repair (admin), not laundry
   admin: {
     emoji: '📋',
     stems: ['factura', 'papeles', 'gestion', 'repara', 'arregl', 'tramite', 'seguro', 'banco', 'impuesto', 'contrat'],
     exact: ['cita', 'citas'],
   },
+  laundry: {
+    emoji: '🧺',
+    stems: ['lavadora', 'tender', 'tendi', 'planch', 'ropa', 'colada', 'doblar'],
+    exact: [],
+  },
   food: {
     emoji: '🍽️',
-    stems: ['cena', 'comid', 'comer', 'cocin', 'desayun', 'almuerz', 'merienda', 'receta'],
-    exact: [],
+    // "comer" is exact: as a stem it would also match "comercio"
+    stems: ['cena', 'comid', 'cocin', 'desayun', 'almuerz', 'merienda', 'receta'],
+    exact: ['comer', 'comemos', 'comiendo'],
   },
   other: {
     emoji: '✨',
