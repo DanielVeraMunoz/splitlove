@@ -18,7 +18,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
-import { scheduleOnRN } from 'react-native-worklets';
 
 import { useTheme } from '@/hooks/use-theme';
 import { ARROW_HEIGHT, ARROW_WIDTH, pathFor } from '@/lib/pixel-arrow';
@@ -28,18 +27,25 @@ const ARROW_PX_WIDTH = ARROW_WIDTH * PIXEL;
 const FLIGHT_MS = 700;
 const SECOND_ARROW_DELAY_MS = 180; // one arrow leaves a moment before the other
 
+// A modal is a native layer above the whole app on iOS. For about this long after it starts
+// closing it would hide the arrows, so screens that close a modal wait before celebrating.
+export const MODAL_DISMISS_MS = 350;
+
+// The drawing never changes: build its paths once, not on every render
+const SHAFT_PATH = pathFor('shaft');
+const FEATHER_PATH = pathFor('feather');
+const HEAD_PATH = pathFor('head');
+
 type Direction = 'right' | 'left';
 
 function FlyingArrow({
   direction,
   top,
   delay,
-  onDone,
 }: {
   direction: Direction;
   top: number;
   delay: number;
-  onDone?: () => void;
 }) {
   const theme = useTheme();
   const { width } = useWindowDimensions();
@@ -49,13 +55,10 @@ function FlyingArrow({
     progress.set(
       withDelay(
         delay,
-        withTiming(1, { duration: FLIGHT_MS, easing: Easing.inOut(Easing.quad) }, (finished) => {
-          'worklet';
-          if (finished && onDone) scheduleOnRN(onDone);
-        }),
+        withTiming(1, { duration: FLIGHT_MS, easing: Easing.inOut(Easing.quad) }),
       ),
     );
-  }, [delay, onDone, progress]);
+  }, [delay, progress]);
 
   // Starts fully off one edge and ends fully off the other
   const from = direction === 'right' ? -ARROW_PX_WIDTH : width;
@@ -74,16 +77,17 @@ function FlyingArrow({
           height={ARROW_HEIGHT * PIXEL}
           viewBox={`0 0 ${ARROW_WIDTH} ${ARROW_HEIGHT}`}>
           {/* the thin stroke seals the hairline seams between neighbouring pixels */}
-          <Path d={pathFor('shaft')} fill={theme.text} stroke={theme.text} strokeWidth={0.06} />
-          <Path d={pathFor('feather')} fill={theme.accent} stroke={theme.accent} strokeWidth={0.06} />
-          <Path d={pathFor('head')} fill={theme.accent} stroke={theme.accent} strokeWidth={0.06} />
+          <Path d={SHAFT_PATH} fill={theme.text} stroke={theme.text} strokeWidth={0.06} />
+          <Path d={FEATHER_PATH} fill={theme.accent} stroke={theme.accent} strokeWidth={0.06} />
+          <Path d={HEAD_PATH} fill={theme.accent} stroke={theme.accent} strokeWidth={0.06} />
         </Svg>
       </View>
     </Animated.View>
   );
 }
 
-type CelebrationContextValue = { celebrate: () => void };
+// `delayMs`: how long to wait before the arrows start (see MODAL_DISMISS_MS)
+type CelebrationContextValue = { celebrate: (options?: { delayMs?: number }) => void };
 
 const CelebrationContext = createContext<CelebrationContextValue>({ celebrate: () => {} });
 
@@ -92,36 +96,55 @@ const CelebrationContext = createContext<CelebrationContextValue>({ celebrate: (
 export function CelebrationProvider({ children }: { children: ReactNode }) {
   const reduceMotion = useReducedMotion();
   const { height } = useWindowDimensions();
-  const [flightId, setFlightId] = useState(0);
-  const [active, setActive] = useState(false);
+  // null = nothing flying. A new id restarts the animation, even mid-flight.
+  const [flight, setFlight] = useState<{ id: number; delayMs: number } | null>(null);
 
-  const celebrate = useCallback(() => {
-    // someone who asked their phone for less motion gets none
-    if (reduceMotion) return;
-    setFlightId((id) => id + 1); // a new key restarts the animation, even mid-flight
-    setActive(true);
-  }, [reduceMotion]);
+  const celebrate = useCallback(
+    ({ delayMs = 0 }: { delayMs?: number } = {}) => {
+      // someone who asked their phone for less motion gets none
+      if (reduceMotion) return;
+      setFlight((current) => ({ id: (current?.id ?? 0) + 1, delayMs }));
+    },
+    [reduceMotion],
+  );
 
-  const finish = useCallback(() => setActive(false), []);
+  // Remove the overlay when the flight is over. A timer rather than a callback from the
+  // animation: if the animation is cut short (app sent to the background), it still goes away.
+  const flightId = flight?.id;
+  const flightDelay = flight?.delayMs ?? 0;
+  useEffect(() => {
+    if (flightId === undefined) return;
+    const timer = setTimeout(
+      () => setFlight(null),
+      flightDelay + SECOND_ARROW_DELAY_MS + FLIGHT_MS + 100,
+    );
+    return () => clearTimeout(timer);
+  }, [flightId, flightDelay]);
+
   const value = useMemo(() => ({ celebrate }), [celebrate]);
 
   return (
     <CelebrationContext.Provider value={value}>
       {children}
-      {active && (
-        // pointerEvents none: it must never swallow a touch. Decorative: hidden from screen readers.
+      {flight && (
+        // It must never swallow a touch (prop and style: the prop is being phased out in
+        // favour of the style). Decorative: hidden from screen readers.
         <View
           style={styles.overlay}
           pointerEvents="none"
           accessibilityElementsHidden
           importantForAccessibility="no-hide-descendants">
-          <FlyingArrow key={`a-${flightId}`} direction="right" top={height * 0.3} delay={0} />
           <FlyingArrow
-            key={`b-${flightId}`}
+            key={`a-${flight.id}`}
+            direction="right"
+            top={height * 0.3}
+            delay={flight.delayMs}
+          />
+          <FlyingArrow
+            key={`b-${flight.id}`}
             direction="left"
             top={height * 0.42}
-            delay={SECOND_ARROW_DELAY_MS}
-            onDone={finish}
+            delay={flight.delayMs + SECOND_ARROW_DELAY_MS}
           />
         </View>
       )}
@@ -134,7 +157,7 @@ export function useCelebration() {
 }
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFill, zIndex: 900 },
+  overlay: { ...StyleSheet.absoluteFill, zIndex: 900, pointerEvents: 'none' },
   arrow: { position: 'absolute', left: 0 },
   mirrored: { transform: [{ scaleX: -1 }] },
 });

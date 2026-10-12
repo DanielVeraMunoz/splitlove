@@ -49,22 +49,30 @@ export const ARROW_PIXELS: ArrowPixel[] = [...shaft, ...feathers, ...head];
 export const ARROW_WIDTH = HEAD_OFFSET + 8;
 export const ARROW_HEIGHT = HEART_WIDTH;
 
-// One SVG path per part: every pixel is a 1 x 1 square. Adjacent pixels of a row are merged
-// into a single run so the path stays small.
+// One SVG path per part: every pixel is a 1 x 1 square. Neighbouring pixels of a row are
+// merged into one run, so the path stays small.
 export function pathFor(part: ArrowPart): string {
   const rows = new Map<number, number[]>();
-  for (const p of ARROW_PIXELS) {
-    if (p.part === part) rows.set(p.y, [...(rows.get(p.y) ?? []), p.x]);
+  for (const pixel of ARROW_PIXELS) {
+    if (pixel.part !== part) continue;
+    const xs = rows.get(pixel.y) ?? [];
+    xs.push(pixel.x);
+    rows.set(pixel.y, xs);
   }
+
   let d = '';
   for (const [y, xs] of rows) {
-    const sorted = [...xs].sort((a, b) => a - b);
-    let start = sorted[0];
-    for (let i = 1; i <= sorted.length; i++) {
-      if (sorted[i] !== sorted[i - 1] + 1) {
-        d += `M${start} ${y}h${sorted[i - 1] - start + 1}v1h-${sorted[i - 1] - start + 1}z`;
-        start = sorted[i];
+    xs.sort((a, b) => a - b);
+    let runStart = xs[0];
+    let previous = xs[0];
+    // a run ends when the next x is not right next to the previous one
+    for (const x of [...xs.slice(1), Infinity]) {
+      if (x !== previous + 1) {
+        const width = previous - runStart + 1;
+        d += `M${runStart} ${y}h${width}v1h-${width}z`;
+        runStart = x;
       }
+      previous = x;
     }
   }
   return d;
