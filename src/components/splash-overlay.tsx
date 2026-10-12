@@ -1,5 +1,5 @@
 import * as SplashScreen from 'expo-splash-screen';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform, StyleSheet, useColorScheme } from 'react-native';
 import Animated, { FadeOut } from 'react-native-reanimated';
 
@@ -16,15 +16,25 @@ const SPLASH_IMAGE_WIDTH = 120; // `imageWidth` in app.json
 const HEART_FRACTION = 864 / 1024; // the heart is 864 px wide inside the 1024 px PNG
 const HEART_WIDTH = SPLASH_IMAGE_WIDTH * HEART_FRACTION;
 
+// Reading the stored session takes a few milliseconds, which would make the heart flash by
+// unseen. It stays at least this long so the brand moment is actually perceived.
+const MIN_VISIBLE_MS = 800;
+
 export function AnimatedSplashOverlay() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const { isLoading } = useSession();
   const nativeSplashHidden = useRef(false);
+  const [minTimePassed, setMinTimePassed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMinTimePassed(true), MIN_VISIBLE_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Mobile only: on web there is no native splash to hand over from.
-  // When the app is ready (isLoading false) the overlay stops rendering, and the `exiting`
-  // animation below turns that disappearance into the fade-out.
-  if (Platform.OS === 'web' || !isLoading) return null;
+  // When the app is ready (session read AND minimum time passed) the overlay stops rendering,
+  // and the `exiting` animation below turns that disappearance into the fade-out.
+  if (Platform.OS === 'web' || (!isLoading && minTimePassed)) return null;
 
   return (
     <Animated.View
