@@ -13,6 +13,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
 
 export default function SignInScreen() {
@@ -41,14 +42,14 @@ export default function SignInScreen() {
         });
         if (error) setMessage(error.message);
         // With email confirmation enabled there is no session until the link is opened
-        else if (!data.session) setMessage('Check your email to confirm your account.');
+        else if (!data.session) setMessage(t('auth.checkEmail'));
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
         if (error) setMessage(error.message);
       }
     } catch {
       // network failures reject instead of returning { error }
-      setMessage('Something went wrong. Check your connection and try again.');
+      setMessage(t('common.networkError'));
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,7 @@ export default function SignInScreen() {
           {isSignUp && (
             <TextInput
               style={inputStyle}
-              placeholder="Your name"
+              placeholder={t('auth.yourName')}
               placeholderTextColor={theme.textSecondary}
               value={displayName}
               onChangeText={setDisplayName}
@@ -75,7 +76,7 @@ export default function SignInScreen() {
           )}
           <TextInput
             style={inputStyle}
-            placeholder="Email"
+            placeholder={t('auth.email')}
             placeholderTextColor={theme.textSecondary}
             autoCapitalize="none"
             autoComplete="email"
@@ -85,7 +86,7 @@ export default function SignInScreen() {
           />
           <TextInput
             style={inputStyle}
-            placeholder="Password"
+            placeholder={t('auth.password')}
             placeholderTextColor={theme.textSecondary}
             secureTextEntry
             autoCapitalize="none"
@@ -103,14 +104,14 @@ export default function SignInScreen() {
               <ActivityIndicator color={theme.background} />
             ) : (
               <ThemedText style={{ color: theme.background }}>
-                {isSignUp ? 'Create account' : 'Sign in'}
+                {isSignUp ? t('auth.createAccount') : t('auth.signIn')}
               </ThemedText>
             )}
           </Pressable>
 
           <Pressable onPress={() => setMode(isSignUp ? 'signIn' : 'signUp')}>
             <ThemedText type="link">
-              {isSignUp ? 'I already have an account' : 'Create an account'}
+              {isSignUp ? t('auth.switchToSignIn') : t('auth.switchToSignUp')}
             </ThemedText>
           </Pressable>
         </KeyboardAvoidingView>

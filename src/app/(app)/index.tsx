@@ -7,7 +7,8 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { GROUP_KINDS, type Group } from '@/lib/groups';
+import { t } from '@/i18n';
+import type { Group } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 
 export default function HomeScreen() {
@@ -40,7 +41,7 @@ export default function HomeScreen() {
           // the query builder only has .then(ok, fail): no .catch/.finally
           () => {
             if (ignore) return;
-            setError('Could not load your groups. Check your connection.');
+            setError(t('groups.loadError'));
             setLoading(false);
           },
         );
@@ -54,7 +55,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="subtitle">Your groups</ThemedText>
+        <ThemedText type="subtitle">{t('groups.yourGroups')}</ThemedText>
 
         {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
@@ -66,7 +67,7 @@ export default function HomeScreen() {
             // don't claim "no groups" before the first answer arrives
             loading ? null : (
               <ThemedText themeColor="textSecondary">
-                No groups yet. Create one to start counting.
+                {t('groups.empty')}
               </ThemedText>
             )
           }
@@ -74,7 +75,7 @@ export default function HomeScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="smallBold">{item.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {GROUP_KINDS.find((kind) => kind.value === item.kind)?.label ?? item.kind}
+                {t(`groups.kinds.${item.kind}`)}
               </ThemedText>
             </ThemedView>
           )}
@@ -83,11 +84,11 @@ export default function HomeScreen() {
         <Pressable
           style={[styles.button, { backgroundColor: theme.text }]}
           onPress={() => router.push('/new-group')}>
-          <ThemedText style={{ color: theme.background }}>Create group</ThemedText>
+          <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
         </Pressable>
 
         <Pressable onPress={() => supabase.auth.signOut()}>
-          <ThemedText type="link">Sign out</ThemedText>
+          <ThemedText type="link">{t('auth.signOut')}</ThemedText>
         </Pressable>
       </SafeAreaView>
     </ThemedView>
