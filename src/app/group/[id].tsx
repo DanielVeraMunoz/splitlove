@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BalanceSummary, type Debt, type MemberPoints } from '@/components/balance-summary';
 import { CategoryIcon } from '@/components/category-icon';
 import { IconBadge } from '@/components/icon-badge';
+import { ShareGroupButton } from '@/components/share-group-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -44,6 +45,7 @@ export default function GroupScreen() {
   const myId = session?.user.id;
 
   const [groupName, setGroupName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [names, setNames] = useState<Record<string, string>>({});
   const [entries, setEntries] = useState<Entry[]>([]);
   const [points, setPoints] = useState<MemberPoints[]>([]);
@@ -58,6 +60,12 @@ export default function GroupScreen() {
   const rowRefs = useRef(new Map<string, SwipeableMethods>());
 
   // Returns a cleanup function that makes a late answer be ignored
+  // stable between renders, so the header doesn't re-mount the button on every update
+  const renderShare = useCallback(
+    () => <ShareGroupButton name={groupName} code={inviteCode} />,
+    [groupName, inviteCode],
+  );
+
   const load = useCallback(() => {
     cancelLoad.current?.();
     let ignore = false;
@@ -66,7 +74,7 @@ export default function GroupScreen() {
     // database from the entries. They are separate requests, so if someone logs
     // something between them the screen can be briefly inconsistent until the next reload.
     Promise.all([
-      supabase.from('groups').select('name').eq('id', id).single(),
+      supabase.from('groups').select('name, invite_code').eq('id', id).single(),
       supabase.from('group_members').select('user_id, profiles(display_name)').eq('group_id', id),
       supabase
         .from('entries')
@@ -84,6 +92,7 @@ export default function GroupScreen() {
         } else {
           setError(null);
           setGroupName(group.data.name);
+          setInviteCode(group.data.invite_code);
           setNames(
             Object.fromEntries(
               (members.data as unknown as MemberRow[]).map((row) => [
@@ -163,7 +172,13 @@ export default function GroupScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: groupName }} />
+      <Stack.Screen
+        options={{
+          title: groupName,
+          // only once the code has loaded
+          headerRight: inviteCode ? renderShare : undefined,
+        }}
+      />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
