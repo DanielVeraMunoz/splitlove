@@ -20,7 +20,13 @@ export const es = {
   },
   activity: {
     title: 'Actividad',
-    soon: 'Aquí verás lo último que pase en tus grupos.',
+    empty: 'Todavía no hay movimientos. Apunta algo con el +.',
+    loadError: 'No se ha podido cargar la actividad. Revisa tu conexión.',
+    now: 'ahora',
+    minutesAgo: 'hace {{count}} min',
+    hoursAgo: 'hace {{count}} h',
+    yesterday: 'ayer',
+    daysAgo: 'hace {{count}} días',
   },
   profile: {
     title: 'Perfil',

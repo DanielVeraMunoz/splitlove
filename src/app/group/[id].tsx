@@ -17,7 +17,7 @@ import { ThemedView } from '@/components/themed-view';
 import { FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
-import { formatPoints } from '@/lib/format';
+import { formatPoints, signedPoints } from '@/lib/format';
 import { isCategoryId } from '@/lib/categories';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -275,7 +275,7 @@ export default function GroupScreen() {
                   themeColor={mine ? 'positive' : 'negative'}
                   style={styles.points}
                   accessibilityLabel={pointsLabel}>
-                  {`${mine ? '+' : '-'}${item.points}`}
+                  {signedPoints(mine, item.points)}
                 </ThemedText>
               </ThemedView>
             );
