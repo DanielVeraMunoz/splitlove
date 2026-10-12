@@ -1,12 +1,16 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, SectionList, StyleSheet, View } from 'react-native';
+import ReanimatedSwipeable, {
+  type SwipeableMethods,
+} from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BalanceSummary, type Debt, type MemberPoints } from '@/components/balance-summary';
 import { CategoryIcon } from '@/components/category-icon';
+import { IconBadge } from '@/components/icon-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -48,9 +52,14 @@ export default function GroupScreen() {
   const [error, setError] = useState<string | null>(null);
   // guards against a double tap pushing the modal twice
   const opening = useRef(false);
+  // cancels the previous load when a new one starts (so an old answer can't overwrite a new one)
+  const cancelLoad = useRef<(() => void) | null>(null);
+  // every row's swipe controls by entry id, so opening one can close the others
+  const rowRefs = useRef(new Map<string, SwipeableMethods>());
 
   // Returns a cleanup function that makes a late answer be ignored
   const load = useCallback(() => {
+    cancelLoad.current?.();
     let ignore = false;
 
     // Independent queries, run in parallel. The two views are computed by the
@@ -96,9 +105,11 @@ export default function GroupScreen() {
       },
     );
 
-    return () => {
+    const cleanup = () => {
       ignore = true;
     };
+    cancelLoad.current = cleanup;
+    return cleanup;
   }, [id]);
 
   // Reload every time the screen gains focus (e.g. after adding an entry)
@@ -190,32 +201,87 @@ export default function GroupScreen() {
               month: 'short',
             });
 
-            return (
-              <Pressable
-                // only whoever logged an entry may void it (enforced by the database too)
-                onLongPress={item.created_by === myId ? () => confirmVoid(item) : undefined}>
-                <ThemedView type="backgroundElement" style={styles.row}>
-                  <ThemedView type="backgroundSelected" style={styles.iconBox}>
-                    <CategoryIcon category={category} />
-                  </ThemedView>
-                  <View style={styles.rowText}>
-                    <ThemedText type="smallBold">{item.label}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary">
-                      {doneBy} · {day}
-                    </ThemedText>
-                  </View>
-                  {/* From my point of view: +N if I did it, -N if someone else did (I owe it) */}
-                  <ThemedText
-                    type="smallBold"
-                    themeColor={mine ? 'positive' : 'negative'}
-                    style={styles.points}
-                    accessibilityLabel={t(mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
-                      points: formatPoints(item.points),
-                    })}>
-                    {`${mine ? '+' : '-'}${item.points}`}
+            // only whoever logged an entry may void it (the database enforces it too)
+            const canVoid = item.created_by === myId;
+            const pointsLabel = t(mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
+              points: formatPoints(item.points),
+            });
+
+            const row = (
+              <ThemedView
+                type="backgroundElement"
+                style={styles.row}
+                // One focus stop per entry, read as a whole
+                accessible
+                accessibilityLabel={`${item.label}. ${doneBy}. ${day}. ${pointsLabel}`}
+                // swipe gestures are out of reach for screen readers: offer an action instead
+                accessibilityActions={
+                  canVoid ? [{ name: 'void', label: t('entries.voidAction') }] : undefined
+                }
+                onAccessibilityAction={(event) => {
+                  if (event.nativeEvent.actionName === 'void') confirmVoid(item);
+                }}>
+                <IconBadge>
+                  <CategoryIcon category={category} />
+                </IconBadge>
+                <View style={styles.rowText}>
+                  <ThemedText type="smallBold">{item.label}</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary">
+                    {doneBy} · {day}
                   </ThemedText>
-                </ThemedView>
+                </View>
+                {/* From my point of view: +N if I did it, -N if someone else did (I owe it) */}
+                <ThemedText
+                  type="smallBold"
+                  themeColor={mine ? 'positive' : 'negative'}
+                  style={styles.points}
+                  accessibilityLabel={pointsLabel}>
+                  {`${mine ? '+' : '-'}${item.points}`}
+                </ThemedText>
+              </ThemedView>
+            );
+
+            if (!canVoid) return row;
+
+            // Same red action whichever way you swipe. It asks for confirmation:
+            // voiding changes everyone's balance.
+            const voidAction = (
+              _progress: unknown,
+              _translation: unknown,
+              swipe: SwipeableMethods,
+            ) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('entries.voidAction')}
+                style={[styles.voidAction, { backgroundColor: theme.negative }]}
+                onPress={() => {
+                  swipe.close();
+                  confirmVoid(item);
+                }}>
+                <FontAwesomeIcon icon={faTrash} size={18} color={theme.background} />
+                <ThemedText type="small" style={{ color: theme.background }}>
+                  {t('entries.voidAction')}
+                </ThemedText>
               </Pressable>
+            );
+
+            return (
+              <ReanimatedSwipeable
+                renderLeftActions={voidAction}
+                renderRightActions={voidAction}
+                overshootLeft={false}
+                overshootRight={false}
+                ref={(swipe) => {
+                  if (swipe) rowRefs.current.set(item.id, swipe);
+                  else rowRefs.current.delete(item.id);
+                }}
+                onSwipeableOpen={() => {
+                  rowRefs.current.forEach((other, id) => {
+                    if (id !== item.id) other.close();
+                  });
+                }}>
+                {row}
+              </ReanimatedSwipeable>
             );
           }}
         />
@@ -260,12 +326,12 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     padding: Spacing.three,
   },
-  iconBox: {
-    width: 44,
-    height: 44,
+  voidAction: {
+    width: 88,
     borderRadius: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.one,
   },
   rowText: { flex: 1 },
   points: { fontSize: 20, lineHeight: 28 },
