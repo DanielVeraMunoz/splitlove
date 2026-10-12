@@ -1,20 +1,68 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useSession } from '@/lib/session';
+import { useTheme } from '@/hooks/use-theme';
+import { GROUP_KINDS, type Group } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 
 export default function HomeScreen() {
-  const { session } = useSession();
+  const theme = useTheme();
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  // Reload every time the screen gains focus, so a group just created shows up
+  useFocusEffect(
+    useCallback(() => {
+      supabase
+        .from('groups')
+        .select('id, name, kind')
+        .order('created_at', { ascending: false })
+        .then(({ data, error: queryError }) => {
+          if (queryError) setError(queryError.message);
+          else {
+            setError(null);
+            setGroups(data as Group[]);
+          }
+        });
+    }, []),
+  );
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="title">Splitlove</ThemedText>
-        <ThemedText themeColor="textSecondary">Signed in as {session?.user.email}</ThemedText>
+        <ThemedText type="subtitle">Your groups</ThemedText>
+
+        {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
+
+        <FlatList
+          data={groups}
+          keyExtractor={(group) => group.id}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <ThemedText themeColor="textSecondary">
+              No groups yet. Create one to start counting.
+            </ThemedText>
+          }
+          renderItem={({ item }) => (
+            <ThemedView type="backgroundElement" style={styles.card}>
+              <ThemedText type="smallBold">{item.name}</ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                {GROUP_KINDS.find((kind) => kind.value === item.kind)?.label}
+              </ThemedText>
+            </ThemedView>
+          )}
+        />
+
+        <Pressable
+          style={[styles.button, { backgroundColor: theme.text }]}
+          onPress={() => router.push('/new-group')}>
+          <ThemedText style={{ color: theme.background }}>Create group</ThemedText>
+        </Pressable>
 
         <Pressable onPress={() => supabase.auth.signOut()}>
           <ThemedText type="link">Sign out</ThemedText>
@@ -28,9 +76,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
     gap: Spacing.three,
-    paddingHorizontal: Spacing.four,
+    padding: Spacing.four,
+    alignItems: 'stretch',
+  },
+  list: { gap: Spacing.two },
+  card: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.one,
+  },
+  button: {
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.three,
+    alignItems: 'center',
   },
 });
