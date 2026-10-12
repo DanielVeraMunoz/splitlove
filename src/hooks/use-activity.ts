@@ -14,7 +14,7 @@ export type ActivityItem = {
   points: number;
   createdAt: string;
   mine: boolean; // did I do it? (it decides +N or -N from my point of view)
-  authorName: string | null; // null when it is me
+  authorName: string; // '' when it is me (the screen says "Tú" instead)
 };
 
 type EntryRow = {
@@ -42,6 +42,9 @@ export function useActivity() {
   const cancelLoad = useRef<(() => void) | null>(null);
 
   const load = useCallback(() => {
+    // without a session we can't tell which entries are mine: better nothing than wrong signs
+    if (!myId) return;
+
     cancelLoad.current?.();
     let ignore = false;
 
@@ -56,24 +59,28 @@ export function useActivity() {
           if (ignore) return;
           if (queryError || !data) {
             setError(t('activity.loadError'));
+            setItems([]); // never leave the old list under an error: it would look current
             setLoading(false);
             return;
           }
 
           const rows = data as unknown as EntryRow[];
 
-          // Names of the authors. If this fails the feed still works, just without names.
+          // Names of the authors. supabase-js returns failures in `error` (it does not throw),
+          // and a rejection means no network. Either way the feed still works, without names.
           const authorIds = [...new Set(rows.map((row) => row.author_id))];
           const names = new Map<string, string>();
           if (authorIds.length > 0) {
             try {
-              const { data: profiles } = await supabase
+              const { data: profiles, error: namesError } = await supabase
                 .from('profiles')
                 .select('id, display_name')
                 .in('id', authorIds);
-              for (const profile of profiles ?? []) names.set(profile.id, profile.display_name);
+              if (!namesError) {
+                for (const profile of profiles ?? []) names.set(profile.id, profile.display_name);
+              }
             } catch {
-              // names are decoration: keep going without them
+              // no network for this one: keep going without names
             }
             if (ignore) return;
           }
@@ -88,7 +95,7 @@ export function useActivity() {
               points: row.points,
               createdAt: row.created_at,
               mine: row.author_id === myId,
-              authorName: row.author_id === myId ? null : (names.get(row.author_id) ?? '?'),
+              authorName: row.author_id === myId ? '' : (names.get(row.author_id) ?? '?'),
             })),
           );
           setError(null);
@@ -98,6 +105,7 @@ export function useActivity() {
         () => {
           if (ignore) return;
           setError(t('activity.loadError'));
+          setItems([]);
           setLoading(false);
         },
       );

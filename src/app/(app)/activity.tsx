@@ -12,7 +12,7 @@ import { useActivity, type ActivityItem } from '@/hooks/use-activity';
 import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
 import { isCategoryId } from '@/lib/categories';
-import { formatPoints } from '@/lib/format';
+import { formatPoints, signedPoints } from '@/lib/format';
 import { relativeTime } from '@/lib/relative-time';
 
 function timeAgoText(createdAt: string) {
@@ -71,8 +71,9 @@ export default function ActivityScreen() {
 
 function ActivityRow({ item }: { item: ActivityItem }) {
   const category = isCategoryId(item.category) ? item.category : 'other';
-  const who = item.mine ? t('entries.you') : (item.authorName ?? '?');
-  const sub = `${who} · ${item.groupName} · ${timeAgoText(item.createdAt)}`;
+  const who = item.mine ? t('entries.you') : item.authorName;
+  // a group without a name must not leave an empty segment between the dots
+  const sub = [who, item.groupName, timeAgoText(item.createdAt)].filter(Boolean).join(' · ');
   const pointsLabel = t(item.mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
     points: formatPoints(item.points),
   });
@@ -99,7 +100,7 @@ function ActivityRow({ item }: { item: ActivityItem }) {
           type="smallBold"
           themeColor={item.mine ? 'positive' : 'negative'}
           style={styles.points}>
-          {`${item.mine ? '+' : '-'}${item.points}`}
+          {signedPoints(item.mine, item.points)}
         </ThemedText>
       </ThemedView>
     </Pressable>
