@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, Share, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
       supabase
         .from('groups')
-        .select('id, name, kind')
+        .select('id, name, kind, invite_code')
         .order('created_at', { ascending: false })
         .then(
           ({ data, error: queryError }) => {
@@ -77,6 +77,16 @@ export default function HomeScreen() {
               <ThemedText type="small" themeColor="textSecondary">
                 {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
               </ThemedText>
+              <Pressable
+                onPress={() =>
+                  Share.share({
+                    message: t('groups.shareMessage', { name: item.name, code: item.invite_code }),
+                  }).catch(() => {
+                    // the share sheet failed to open: nothing useful to tell the user
+                  })
+                }>
+                <ThemedText type="link">{t('groups.shareCode')}</ThemedText>
+              </Pressable>
             </ThemedView>
           )}
         />
@@ -85,6 +95,10 @@ export default function HomeScreen() {
           style={[styles.button, { backgroundColor: theme.text }]}
           onPress={() => router.push('/new-group')}>
           <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
+        </Pressable>
+
+        <Pressable onPress={() => router.push('/join-group')}>
+          <ThemedText type="link">{t('groups.join')}</ThemedText>
         </Pressable>
 
         <Pressable onPress={() => supabase.auth.signOut()}>

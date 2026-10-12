@@ -1,4 +1,6 @@
 -- Splitlove schema (Supabase / Postgres)
+-- BASELINE ONLY. Later changes live in supabase/migrations/ and are applied in filename
+-- order on top of this file (e.g. join_group and the invite codes were changed there).
 -- Run in the Supabase SQL editor. Order matters: tables -> views -> helpers -> RLS -> RPCs.
 
 -- ---------------------------------------------------------------

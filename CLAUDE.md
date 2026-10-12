@@ -30,6 +30,9 @@ for the data model.
 
 - Every entry is done **for the group**; it is charged in full to every other member.
   Debt between two members = difference of points done.
+- `supabase/schema.sql` is the baseline; every later DB change is a new file in
+  `supabase/migrations/` (14-digit timestamp prefix), written to be re-runnable.
+  Dani applies them by hand in the Supabase SQL editor. Say so in the PR.
 - Balances are computed (views), never stored.
 - Entries are voided (`voided_at`), never deleted.
 - Never commit secrets. Supabase keys live in `.env` (gitignored). The `anon` key
