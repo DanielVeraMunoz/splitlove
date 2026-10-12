@@ -81,6 +81,8 @@ export default function HomeScreen() {
                 onPress={() =>
                   Share.share({
                     message: t('groups.shareMessage', { name: item.name, code: item.invite_code }),
+                  }).catch(() => {
+                    // the share sheet failed to open: nothing useful to tell the user
                   })
                 }>
                 <ThemedText type="link">{t('groups.shareCode')}</ThemedText>

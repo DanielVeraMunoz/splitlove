@@ -2,12 +2,13 @@
 -- max 5 failed codes per user in 15 minutes. Done in the database because
 -- a limit in the app is trivial to bypass by calling the API directly.
 
-create table join_failures (
+-- Idempotent on purpose: safe to re-run if it was already applied once.
+create table if not exists join_failures (
   user_id      uuid not null references profiles(id) on delete cascade,
   attempted_at timestamptz not null default now()
 );
 
-create index join_failures_user_idx on join_failures (user_id, attempted_at desc);
+create index if not exists join_failures_user_idx on join_failures (user_id, attempted_at desc);
 
 -- RLS on and no policies/grants: clients can never read or write this table.
 -- Only join_group (security definer) touches it.
@@ -22,15 +23,20 @@ declare
   gid uuid;
   recent_failures int;
 begin
-  -- housekeeping so the table doesn't grow forever
-  delete from join_failures where attempted_at < now() - interval '1 day';
+  -- Serialize this user's calls. Without it, 200 parallel requests would all
+  -- count 0 recent failures before any of them records its own, bypassing the limit.
+  perform pg_advisory_xact_lock(hashtext(auth.uid()::text));
+
+  -- housekeeping; limited to this user's rows so the index can serve it
+  delete from join_failures
+  where user_id = auth.uid() and attempted_at < now() - interval '1 day';
 
   select count(*) into recent_failures
   from join_failures
   where user_id = auth.uid() and attempted_at > now() - interval '15 minutes';
 
   if recent_failures >= 5 then
-    raise exception 'too_many_attempts';
+    raise exception 'too_many_attempts' using errcode = 'JG001';
   end if;
 
   select id into gid from groups where invite_code = lower(btrim(p_code));

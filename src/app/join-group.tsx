@@ -28,11 +28,12 @@ export default function JoinGroupScreen() {
     setError(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('join_group', { p_code: code.trim() });
+      const { data, error: rpcError } = await supabase.rpc('join_group', { p_code: code.trim().toLowerCase() });
 
       if (rpcError) {
         setError(
-          rpcError.message.includes('too_many_attempts')
+          // JG001 is the custom error code raised by join_group when rate limited
+          rpcError.code === 'JG001' || rpcError.message.includes('too_many_attempts')
             ? t('groups.tooManyAttempts')
             : t('common.networkError'),
         );
