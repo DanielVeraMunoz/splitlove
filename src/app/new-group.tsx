@@ -15,6 +15,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { t } from '@/i18n';
 import { GROUP_KINDS, type GroupKind } from '@/lib/groups';
 import { supabase } from '@/lib/supabase';
 
@@ -42,7 +43,7 @@ export default function NewGroupScreen() {
       }
       setError(rpcError.message);
     } catch {
-      setError('Something went wrong. Check your connection and try again.');
+      setError(t('common.networkError'));
     }
     setLoading(false);
   }
@@ -53,31 +54,31 @@ export default function NewGroupScreen() {
         <KeyboardAvoidingView
           style={styles.form}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="subtitle">New group</ThemedText>
+          <ThemedText type="subtitle">{t('groups.newTitle')}</ThemedText>
 
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-            placeholder="Group name"
+            placeholder={t('groups.namePlaceholder')}
             placeholderTextColor={theme.textSecondary}
             maxLength={50}
             value={name}
             onChangeText={setName}
           />
 
-          <ThemedText type="smallBold">What are you?</ThemedText>
+          <ThemedText type="smallBold">{t('groups.whatAreYou')}</ThemedText>
           <View style={styles.chips}>
             {GROUP_KINDS.map((option) => {
-              const selected = option.value === kind;
+              const selected = option === kind;
               return (
                 <Pressable
-                  key={option.value}
-                  onPress={() => setKind(option.value)}
+                  key={option}
+                  onPress={() => setKind(option)}
                   style={[
                     styles.chip,
                     { backgroundColor: selected ? theme.text : theme.backgroundElement },
                   ]}>
                   <ThemedText style={{ color: selected ? theme.background : theme.text }}>
-                    {option.label}
+                    {t(`groups.kinds.${option}`)}
                   </ThemedText>
                 </Pressable>
               );
@@ -93,7 +94,7 @@ export default function NewGroupScreen() {
             {loading ? (
               <ActivityIndicator color={theme.background} />
             ) : (
-              <ThemedText style={{ color: theme.background }}>Create group</ThemedText>
+              <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
             )}
           </Pressable>
         </KeyboardAvoidingView>
