@@ -16,6 +16,8 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="group/[id]" options={{ headerShown: true, title: '' }} />
+        <Stack.Screen name="new-entry" options={{ presentation: 'modal' }} />
         <Stack.Screen name="new-group" options={{ presentation: 'modal' }} />
         <Stack.Screen name="join-group" options={{ presentation: 'modal' }} />
       </Stack.Protected>
