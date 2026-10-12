@@ -9,9 +9,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { Wordmark } from '@/components/wordmark';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { t } from '@/i18n';
 import { supabase } from '@/lib/supabase';
@@ -63,7 +64,7 @@ export default function SignInScreen() {
         <KeyboardAvoidingView
           style={styles.form}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="title">Splitlove</ThemedText>
+          <Wordmark size={48} />
 
           {isSignUp && (
             <TextInput
@@ -104,7 +105,7 @@ export default function SignInScreen() {
           />
 
           <Pressable onPress={() => setMode(isSignUp ? 'signIn' : 'signUp')}>
-            <ThemedText type="link">
+            <ThemedText type="link" style={styles.centered}>
               {isSignUp ? t('auth.switchToSignIn') : t('auth.switchToSignUp')}
             </ThemedText>
           </Pressable>
@@ -123,10 +124,12 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
     paddingHorizontal: Spacing.four,
   },
+  centered: { textAlign: 'center' },
   input: {
     borderRadius: Spacing.three,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
+    fontFamily: FontFamily.body,
     fontSize: 16,
   },
 });

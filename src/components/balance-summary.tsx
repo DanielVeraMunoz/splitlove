@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { t } from '@/i18n';
 import { formatPoints } from '@/lib/format';
 
@@ -44,7 +44,7 @@ export function BalanceSummary({ myId, names, points, debts }: Props) {
 
   return (
     <View style={styles.container}>
-      <ThemedText type="smallBold" themeColor="textSecondary">
+      <ThemedText type="smallBold" themeColor="textSecondary" style={styles.sectionLabel}>
         {t('balance.pointsDone')}
       </ThemedText>
       <View style={styles.scores}>
@@ -55,7 +55,7 @@ export function BalanceSummary({ myId, names, points, debts }: Props) {
               <ThemedText type="title" style={styles.number}>
                 {member.points_done}
               </ThemedText>
-              <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+              <ThemedText type="small" themeColor="textSecondary" style={styles.scoreName} numberOfLines={1}>
                 {nameOf(member.user_id)}
               </ThemedText>
             </ThemedView>
@@ -70,7 +70,10 @@ export function BalanceSummary({ myId, names, points, debts }: Props) {
           )
         ) : (
           sortedDebts.map((debt) => (
-            <ThemedText key={`${debt.debtor_id}-${debt.creditor_id}`} type="smallBold">
+            <ThemedText
+              key={`${debt.debtor_id}-${debt.creditor_id}`}
+              type="smallBold"
+              style={styles.debt}>
               {describe(debt)}
             </ThemedText>
           ))
@@ -85,22 +88,27 @@ function involvesMe(debt: Debt, myId: string | undefined) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: Spacing.three },
+  container: { gap: 10 },
+  sectionLabel: { fontSize: 12, letterSpacing: 0.5, textTransform: 'uppercase' },
   scores: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.two,
+    gap: 10,
   },
+  // two tiles per row, each taking half of the width (a third one wraps to the next row)
   score: {
-    borderRadius: Spacing.three,
+    flexGrow: 1,
+    flexBasis: '45%',
+    borderRadius: Radius.card,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    alignItems: 'center',
-    minWidth: 88,
+    paddingVertical: 12,
+    gap: 2,
   },
   number: {
-    fontSize: 32,
-    lineHeight: 40,
+    fontSize: 38,
+    lineHeight: 42,
   },
+  scoreName: { fontSize: 13, lineHeight: 18 },
   debts: { gap: Spacing.one },
+  debt: { fontSize: 15, lineHeight: 22 },
 });

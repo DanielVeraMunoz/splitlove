@@ -14,7 +14,7 @@ import { IconBadge } from '@/components/icon-badge';
 import { ShareGroupButton } from '@/components/share-group-button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
 import { formatPoints } from '@/lib/format';
@@ -133,10 +133,10 @@ export default function GroupScreen() {
   const sections = useMemo(() => {
     const byMonth = new Map<string, Entry[]>();
     for (const entry of entries) {
-      const title = new Date(entry.created_at).toLocaleDateString(locale, {
-        month: 'long',
-        year: 'numeric',
-      });
+      const date = new Date(entry.created_at);
+      const month = date.toLocaleDateString(locale, { month: 'long' });
+      // "Octubre 2026": capital only on the month, and no "de" in between
+      const title = `${month.charAt(0).toLocaleUpperCase(locale)}${month.slice(1)} ${date.getFullYear()}`;
       const bucket = byMonth.get(title);
       if (bucket) bucket.push(entry);
       else byMonth.set(title, [entry]);
@@ -240,8 +240,10 @@ export default function GroupScreen() {
                   <CategoryIcon category={category} />
                 </IconBadge>
                 <View style={styles.rowText}>
-                  <ThemedText type="smallBold">{item.label}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
+                  <ThemedText type="smallBold" style={styles.rowTitle}>
+                    {item.label}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.rowSub}>
                     {doneBy} · {day}
                   </ThemedText>
                 </View>
@@ -308,7 +310,7 @@ export default function GroupScreen() {
             accessibilityLabel={t('entries.add')}
             style={({ pressed }) => [
               styles.fab,
-              { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 },
+              { backgroundColor: theme.accent, shadowColor: theme.accent, opacity: pressed ? 0.7 : 1 },
             ]}
             onPress={() => {
               if (opening.current) return;
@@ -331,25 +333,28 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   month: {
-    marginTop: Spacing.three,
-    textTransform: 'capitalize',
+    marginTop: Spacing.two,
+    fontSize: 13,
   },
+  rowTitle: { fontSize: 15, lineHeight: 21 },
+  rowSub: { fontSize: 13, lineHeight: 18 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
+    gap: 14,
+    borderRadius: Radius.card,
+    paddingVertical: 12,
+    paddingHorizontal: Spacing.three,
   },
   voidAction: {
     width: 88,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.card,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.one,
   },
   rowText: { flex: 1 },
-  points: { fontSize: 20, lineHeight: 28 },
+  points: { fontFamily: FontFamily.display, fontSize: 22, lineHeight: 30 },
   // room so the floating button never hides the last entry
   listWithFab: { paddingBottom: FAB_SIZE + FAB_OFFSET + Spacing.four },
   fabWrapper: {
@@ -365,8 +370,7 @@ const styles = StyleSheet.create({
     borderRadius: FAB_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
