@@ -5,11 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BalanceSummary, type Debt, type MemberPoints } from '@/components/balance-summary';
 import { Button } from '@/components/button';
+import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { locale, t } from '@/i18n';
-import { CATEGORIES, isCategoryId } from '@/lib/categories';
+import { isCategoryId } from '@/lib/categories';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 
@@ -162,7 +163,8 @@ export default function GroupScreen() {
             </ThemedText>
           )}
           renderItem={({ item }) => {
-            const emoji = CATEGORIES[isCategoryId(item.category) ? item.category : 'other'].emoji;
+            // an unknown category (e.g. written straight to the API) shows as "other"
+            const category = isCategoryId(item.category) ? item.category : 'other';
             const who = item.author_id === myId ? t('entries.you') : (names[item.author_id] ?? '?');
             const day = new Date(item.created_at).toLocaleDateString(locale, {
               day: 'numeric',
@@ -174,7 +176,9 @@ export default function GroupScreen() {
                 // only whoever logged an entry may void it (enforced by the database too)
                 onLongPress={item.created_by === myId ? () => confirmVoid(item) : undefined}>
                 <ThemedView type="backgroundElement" style={styles.row}>
-                  <ThemedText style={styles.emoji}>{emoji}</ThemedText>
+                  <ThemedView type="backgroundSelected" style={styles.iconBox}>
+                    <CategoryIcon category={category} />
+                  </ThemedView>
                   <View style={styles.rowText}>
                     <ThemedText type="smallBold">{item.label}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
@@ -216,7 +220,13 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.three,
     padding: Spacing.three,
   },
-  emoji: { fontSize: 28, lineHeight: 36 },
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: Spacing.three,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   rowText: { flex: 1 },
   footer: { padding: Spacing.four },
 });
