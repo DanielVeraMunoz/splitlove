@@ -4,11 +4,26 @@
 export const es = {
   common: {
     close: 'Cerrar',
+    retry: 'Reintentar',
     networkError: 'Algo ha salido mal. Revisa tu conexión e inténtalo de nuevo.',
   },
   tabs: {
     home: 'Inicio',
-    explore: 'Explorar',
+    groups: 'Grupos',
+    add: 'Añadir',
+    activity: 'Actividad',
+    profile: 'Perfil',
+  },
+  home: {
+    totalTitle: 'Tu total',
+    totalHint: 'En todos tus grupos',
+  },
+  activity: {
+    title: 'Actividad',
+    soon: 'Aquí verás lo último que pase en tus grupos.',
+  },
+  profile: {
+    title: 'Perfil',
   },
   auth: {
     yourName: 'Tu nombre',
@@ -73,6 +88,7 @@ export const es = {
   },
   groups: {
     yourGroups: 'Tus grupos',
+    pickTitle: '¿En qué grupo?',
     empty: 'Aún no tienes grupos. Crea uno para empezar a contar.',
     loadError: 'No se han podido cargar tus grupos. Revisa tu conexión.',
     create: 'Crear grupo',
