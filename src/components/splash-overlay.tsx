@@ -1,29 +1,42 @@
 import * as SplashScreen from 'expo-splash-screen';
-import { useState } from 'react';
-import { StyleSheet, useColorScheme } from 'react-native';
+import { useRef } from 'react';
+import { Platform, StyleSheet, useColorScheme } from 'react-native';
 import Animated, { FadeOut } from 'react-native-reanimated';
 
 import { PixelHeart } from '@/components/wordmark';
 import { Colors } from '@/constants/theme';
+import { useSession } from '@/lib/session';
 
 // The native splash (app.json) shows the heart on the brand background. This overlay is
-// IDENTICAL to it and sits on top of the app until it is ready, then fades out, so going
-// from the native splash to the app has no jump.
-// 101 = the heart's width inside the splash image: imageWidth 120 * (864 / 1024) in app.json.
-const HEART_WIDTH = 101;
+// IDENTICAL to it and stays on top until the app can show its first real screen (the stored
+// session has been read), then fades out. So going from the native splash to the app has no jump.
+//
+// Keep these in sync with app.json ("expo-splash-screen" plugin) and splash-icon.png:
+const SPLASH_IMAGE_WIDTH = 120; // `imageWidth` in app.json
+const HEART_FRACTION = 864 / 1024; // the heart is 864 px wide inside the 1024 px PNG
+const HEART_WIDTH = SPLASH_IMAGE_WIDTH * HEART_FRACTION;
 
 export function AnimatedSplashOverlay() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
-  const [visible, setVisible] = useState(true);
+  const { isLoading } = useSession();
+  const nativeSplashHidden = useRef(false);
 
-  if (!visible) return null;
+  // Mobile only: on web there is no native splash to hand over from.
+  // When the app is ready (isLoading false) the overlay stops rendering, and the `exiting`
+  // animation below turns that disappearance into the fade-out.
+  if (Platform.OS === 'web' || !isLoading) return null;
 
   return (
     <Animated.View
       exiting={FadeOut.duration(400)}
-      // Once this overlay is on screen, hide the native splash and start the fade
+      // As soon as this overlay is on screen it covers the native splash, so that one can go.
+      // Once only: onLayout fires again on rotation or inset changes.
       onLayout={() => {
-        SplashScreen.hideAsync().finally(() => setVisible(false));
+        if (nativeSplashHidden.current) return;
+        nativeSplashHidden.current = true;
+        SplashScreen.hideAsync().catch(() => {
+          // already hidden: nothing to do
+        });
       }}
       style={[styles.overlay, { backgroundColor: Colors[scheme].background }]}>
       <PixelHeart width={HEART_WIDTH} color={Colors[scheme].accent} />

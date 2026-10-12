@@ -51,7 +51,8 @@ Key design choices (and why):
   `src/constants/theme.ts`. `positive`/`negative` (+N / -N) are kept apart from the brand pink.
 - Typography: Fredoka for titles and numbers, Nunito for text.
 - App icon and splash screen: pixel heart (light, dark, iOS tinted, Android adaptive + monochrome).
-  Images are generated from the heart's pixel grid. They do NOT show in Expo Go (it shows its own
+  The icon uses the rose of the approved mock-up (#B25666); the in-app accent is a bit deeper
+  (#A24858) so text on it meets contrast AA. Images are generated from the heart's pixel grid. They do NOT show in Expo Go (it shows its own
   icon and splash): they need a development or preview build to be seen.
 - Category icons: Font Awesome (SVG), mapped in `src/components/category-icon.tsx`, so swapping
   them for custom pixel icons is a one-place change.
