@@ -26,21 +26,24 @@ export default function HomeScreen() {
         .from('groups')
         .select('id, name, kind')
         .order('created_at', { ascending: false })
-        .then(({ data, error: queryError }) => {
-          if (ignore) return;
-          if (queryError) {
-            setError(queryError.message);
-          } else {
-            setError(null);
-            setGroups(data as Group[]);
-          }
-        })
-        .catch(() => {
-          if (!ignore) setError('Could not load your groups. Check your connection.');
-        })
-        .finally(() => {
-          if (!ignore) setLoading(false);
-        });
+        .then(
+          ({ data, error: queryError }) => {
+            if (ignore) return;
+            if (queryError) {
+              setError(queryError.message);
+            } else {
+              setError(null);
+              setGroups(data as Group[]);
+            }
+            setLoading(false);
+          },
+          // the query builder only has .then(ok, fail): no .catch/.finally
+          () => {
+            if (ignore) return;
+            setError('Could not load your groups. Check your connection.');
+            setLoading(false);
+          },
+        );
 
       return () => {
         ignore = true;
