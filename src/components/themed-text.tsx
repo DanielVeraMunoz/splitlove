@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontFamily: FontFamily.display,
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: 34,
+    lineHeight: 38,
   },
   link: {
     fontFamily: FontFamily.bodyBold,

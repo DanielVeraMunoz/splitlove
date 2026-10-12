@@ -9,7 +9,7 @@ import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { Wordmark } from '@/components/wordmark';
 import { ThemedView } from '@/components/themed-view';
-import { FontFamily, Spacing } from '@/constants/theme';
+import { FontFamily, Radius, Spacing } from '@/constants/theme';
 import { t } from '@/i18n';
 import { totalsByGroup, type DebtRow } from '@/lib/balance';
 import { formatPoints } from '@/lib/format';
@@ -107,8 +107,10 @@ export default function HomeScreen() {
                   <GroupKindIcon kind={item.kind} />
                 </IconBadge>
                 <View style={styles.cardText}>
-                  <ThemedText type="smallBold">{item.name}</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary">
+                  <ThemedText type="smallBold" style={styles.cardTitle}>
+                    {item.name}
+                  </ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.cardSub}>
                     {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
                   </ThemedText>
                 </View>
@@ -122,13 +124,14 @@ export default function HomeScreen() {
         <Button label={t('groups.create')} onPress={() => router.push('/new-group')} />
 
         <Pressable onPress={() => router.push('/join-group')}>
-          <ThemedText type="link" style={styles.centered}>
+          <ThemedText type="link" style={[styles.centered, styles.joinLink]}>
             {t('groups.join')}
           </ThemedText>
         </Pressable>
 
         <Pressable onPress={() => supabase.auth.signOut()}>
-          <ThemedText type="link" style={styles.centered}>
+          {/* quiet on purpose: small, grey and regular weight, as in the mock-up */}
+          <ThemedText type="small" themeColor="textSecondary" style={[styles.centered, styles.signOut]}>
             {t('auth.signOut')}
           </ThemedText>
         </Pressable>
@@ -167,14 +170,19 @@ const styles = StyleSheet.create({
   },
   header: { gap: Spacing.one },
   centered: { textAlign: 'center' },
+  joinLink: { fontSize: 15 },
+  signOut: { fontSize: 13 },
+  cardTitle: { fontSize: 16, lineHeight: 22 },
+  cardSub: { fontSize: 13, lineHeight: 18 },
   list: { gap: Spacing.two },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: Spacing.three,
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
+    gap: 14,
+    borderRadius: Radius.card,
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.three,
   },
   cardText: { flex: 1, gap: Spacing.one },
   total: { fontFamily: FontFamily.display, fontSize: 24, lineHeight: 32 },

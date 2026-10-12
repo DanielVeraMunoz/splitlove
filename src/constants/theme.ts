@@ -44,6 +44,11 @@ export const FontFamily = {
   display: 'Fredoka_600SemiBold', // titles and numbers
 } as const;
 
+// Corner radii from the mock-up
+export const Radius = {
+  card: 18,
+} as const;
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({

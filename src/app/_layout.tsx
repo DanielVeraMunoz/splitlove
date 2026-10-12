@@ -52,7 +52,7 @@ function RootNavigator() {
   if (isLoading) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false, headerTitleStyle: { fontFamily: FontFamily.display } }}>
+    <Stack screenOptions={{ headerShown: false, headerTitleStyle: { fontFamily: FontFamily.display, fontSize: 20 } }}>
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="group/[id]" options={{ headerShown: true, title: '' }} />
