@@ -21,8 +21,9 @@ export default function HomeScreen() {
   const { session } = useSession();
   const myId = session?.user.id;
   const [groups, setGroups] = useState<Group[]>([]);
-  // my net total per group; a group missing here means 0
-  const [totals, setTotals] = useState<Record<string, number>>({});
+  // my net total per group (a group missing here means 0). null = not known:
+  // not loaded yet, or the debts query failed. Then no number is shown at all.
+  const [totals, setTotals] = useState<Record<string, number> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,16 +39,27 @@ export default function HomeScreen() {
           .from('groups')
           .select('id, name, kind')
           .order('created_at', { ascending: false }),
-        supabase.from('pair_debts').select('group_id, creditor_id, debtor_id, points'),
+        // only the rows that involve me: the view lists every pair of every group
+        myId
+          ? supabase
+              .from('pair_debts')
+              .select('group_id, creditor_id, debtor_id, points')
+              .or(`creditor_id.eq.${myId},debtor_id.eq.${myId}`)
+          : Promise.resolve({ data: null, error: new Error('no session') }),
       ]).then(
         ([groupRows, debtRows]) => {
           if (ignore) return;
-          if (groupRows.error || debtRows.error) {
+          if (groupRows.error) {
             setError(t('groups.loadError'));
+            setTotals(null);
           } else {
             setError(null);
             setGroups(groupRows.data as Group[]);
-            setTotals(myId ? totalsByGroup(debtRows.data as DebtRow[], myId) : {});
+            // The totals are an extra: if only they fail, the list still updates
+            // and just the numbers disappear.
+            setTotals(
+              debtRows.error || !myId ? null : totalsByGroup(debtRows.data as DebtRow[], myId),
+            );
           }
           setLoading(false);
         },
@@ -97,8 +109,8 @@ export default function HomeScreen() {
                     {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
                   </ThemedText>
                 </View>
-                {/* after a failed load the totals may be stale: better none than wrong */}
-                {!error && <GroupTotal total={totals[item.id] ?? 0} />}
+                {/* totals are null when unknown (loading or failed): better none than wrong */}
+                {totals && <GroupTotal total={totals[item.id] ?? 0} />}
               </ThemedView>
             </Pressable>
           )}

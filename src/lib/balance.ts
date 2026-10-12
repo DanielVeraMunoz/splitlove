@@ -13,10 +13,11 @@ export type DebtRow = {
 export function totalsByGroup(debts: DebtRow[], myId: string): Record<string, number> {
   const totals: Record<string, number> = {};
   for (const debt of debts) {
+    const points = Number(debt.points); // never concatenate strings by accident
     if (debt.creditor_id === myId) {
-      totals[debt.group_id] = (totals[debt.group_id] ?? 0) + debt.points;
+      totals[debt.group_id] = (totals[debt.group_id] ?? 0) + points;
     } else if (debt.debtor_id === myId) {
-      totals[debt.group_id] = (totals[debt.group_id] ?? 0) - debt.points;
+      totals[debt.group_id] = (totals[debt.group_id] ?? 0) - points;
     }
   }
   return totals;

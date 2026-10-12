@@ -60,6 +60,12 @@ export default function GroupScreen() {
   const rowRefs = useRef(new Map<string, SwipeableMethods>());
 
   // Returns a cleanup function that makes a late answer be ignored
+  // stable between renders, so the header doesn't re-mount the button on every update
+  const renderShare = useCallback(
+    () => <ShareGroupButton name={groupName} code={inviteCode} />,
+    [groupName, inviteCode],
+  );
+
   const load = useCallback(() => {
     cancelLoad.current?.();
     let ignore = false;
@@ -170,9 +176,7 @@ export default function GroupScreen() {
         options={{
           title: groupName,
           // only once the code has loaded
-          headerRight: inviteCode
-            ? () => <ShareGroupButton name={groupName} code={inviteCode} />
-            : undefined,
+          headerRight: inviteCode ? renderShare : undefined,
         }}
       />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
