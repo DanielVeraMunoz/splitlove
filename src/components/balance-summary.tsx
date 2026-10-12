@@ -19,9 +19,12 @@ type Props = {
 export function BalanceSummary({ myId, names, points, debts }: Props) {
   const nameOf = (id: string) => (id === myId ? t('entries.you') : (names[id] ?? '?'));
 
-  // Debts that involve me come first
+  // Mine first, then the biggest, then by id so the order never jumps between reloads
   const sortedDebts = [...debts].sort(
-    (a, b) => Number(involvesMe(b, myId)) - Number(involvesMe(a, myId)),
+    (a, b) =>
+      Number(involvesMe(b, myId)) - Number(involvesMe(a, myId)) ||
+      b.points - a.points ||
+      `${a.debtor_id}${a.creditor_id}`.localeCompare(`${b.debtor_id}${b.creditor_id}`),
   );
 
   function describe(debt: Debt) {
@@ -41,6 +44,9 @@ export function BalanceSummary({ myId, names, points, debts }: Props) {
 
   return (
     <View style={styles.container}>
+      <ThemedText type="smallBold" themeColor="textSecondary">
+        {t('balance.pointsDone')}
+      </ThemedText>
       <View style={styles.scores}>
         {[...points]
           .sort((a, b) => b.points_done - a.points_done)
@@ -58,7 +64,10 @@ export function BalanceSummary({ myId, names, points, debts }: Props) {
 
       <View style={styles.debts}>
         {sortedDebts.length === 0 ? (
-          <ThemedText themeColor="textSecondary">{t('balance.even')}</ThemedText>
+          // "even" only makes sense with at least two people to be even with
+          points.length >= 2 && (
+            <ThemedText themeColor="textSecondary">{t('balance.even')}</ThemedText>
+          )
         ) : (
           sortedDebts.map((debt) => (
             <ThemedText key={`${debt.debtor_id}-${debt.creditor_id}`} type="smallBold">

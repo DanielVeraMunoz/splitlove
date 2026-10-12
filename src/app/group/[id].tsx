@@ -42,7 +42,8 @@ export default function GroupScreen() {
     let ignore = false;
 
     // Independent queries, run in parallel. The two views are computed by the
-    // database from the entries, so they can never disagree with the list.
+    // database from the entries. They are separate requests, so if someone logs
+    // something between them the screen can be briefly inconsistent until the next reload.
     Promise.all([
       supabase.from('groups').select('name').eq('id', id).single(),
       supabase.from('group_members').select('user_id, profiles(display_name)').eq('group_id', id),
@@ -144,7 +145,11 @@ export default function GroupScreen() {
           contentContainerStyle={styles.list}
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
-            loading ? null : <BalanceSummary myId={myId} names={names} points={points} debts={debts} />
+            // Never show a scoreboard we aren't sure about: not while loading, and not
+            // after a failed load (it would be stale, or empty and say "all even")
+            loading || error ? null : (
+              <BalanceSummary myId={myId} names={names} points={points} debts={debts} />
+            )
           }
           ListEmptyComponent={
             loading ? null : (
