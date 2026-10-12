@@ -75,7 +75,7 @@ export default function HomeScreen() {
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="smallBold">{item.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {t(`groups.kinds.${item.kind}`)}
+                {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
               </ThemedText>
             </ThemedView>
           )}

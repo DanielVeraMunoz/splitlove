@@ -1,5 +1,6 @@
-// Source of truth for the keys. Other languages must have the same shape
-// (see `Translations`), so TypeScript tells us when one is missing a text.
+// Source of truth for the keys. `TranslationKey` (see index.ts) is derived from
+// this object, so t('a.typo') fails to compile. Other languages must have the same
+// shape (`Translations`), so TypeScript also flags a language missing a text.
 export const es = {
   common: {
     networkError: 'Algo ha salido mal. Revisa tu conexión e inténtalo de nuevo.',
