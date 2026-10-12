@@ -42,8 +42,12 @@ export default function NewEntryScreen() {
   const [authorId, setAuthorId] = useState<string | undefined>(params.authorId);
   // null = nobody chose: follow the detector while the user types. When editing, the entry's
   // own category is kept until the user picks another one.
-  const [manualCategory, setManualCategory] = useState<CategoryId | null>(
-    params.category && isCategoryId(params.category) ? params.category : null,
+  const [manualCategory, setManualCategory] = useState<CategoryId | null>(() =>
+    // keep the saved category only if it was a manual choice (it differs from what the text
+    // would give); otherwise keep following the detector as the text is edited
+    params.category && isCategoryId(params.category) && params.category !== detectCategory(params.label ?? '')
+      ? params.category
+      : null,
   );
   const [points, setPoints] = useState<Points>(
     POINT_OPTIONS.find((option) => option === Number(params.points)) ?? 1,
@@ -84,6 +88,18 @@ export default function NewEntryScreen() {
 
   async function save() {
     if (!myId || !author) return;
+    // Nothing changed: no point in voiding an entry to create an identical one
+    if (
+      editing &&
+      label.trim() === (params.label ?? '').trim() &&
+      category === params.category &&
+      points === Number(params.points) &&
+      author === params.authorId
+    ) {
+      router.back();
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -106,13 +122,20 @@ export default function NewEntryScreen() {
             points,
           });
       if (!saveError) {
-        // wait until the modal has left, or it would cover the first arrow
-        celebrate({ delayMs: MODAL_DISMISS_MS });
+        // The arrows reward logging something new, not fixing a typo.
+        // Wait until the modal has left, or it would cover the first arrow.
+        if (!editing) celebrate({ delayMs: MODAL_DISMISS_MS });
         router.back();
         return; // the screen is closing: don't touch its state any more
       }
-      // EE001: the server refused (not yours, or already voided)
-      setError(saveError.code === 'EE001' ? t('entries.editFailed') : t('common.networkError'));
+      // EE001: not yours / already voided. 23503: the author has left the group.
+      setError(
+        saveError.code === 'EE001'
+          ? t('entries.editFailed')
+          : saveError.code === '23503'
+            ? t('entries.authorLeft')
+            : t('common.networkError'),
+      );
     } catch {
       setError(t('common.networkError'));
     }

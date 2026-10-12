@@ -7,6 +7,8 @@
 -- a security definer function that checks the rules by hand.
 
 alter table entries add column if not exists replaces_entry_id uuid references entries(id);
+-- to find the edit chain of an entry without scanning the whole table
+create index if not exists entries_replaces_idx on entries (replaces_entry_id);
 
 create or replace function edit_entry(
   p_entry_id  uuid,
@@ -23,11 +25,14 @@ begin
   -- lock the row, so two edits at once can't both replace it
   select * into old_entry from entries where id = p_entry_id for update;
 
-  -- Only whoever logged it, and only while it is still live. "is distinct from" so that a
-  -- missing session (null) is never treated as a match.
+  -- Only whoever logged it, only while it is still live, and only while still a member of
+  -- the group: this function runs with its own privileges, so it skips the row-level policy that
+  -- normally stops a former member from adding entries. "is distinct from" so that a missing
+  -- session (null) is never treated as a match.
   if not found
      or old_entry.created_by is distinct from auth.uid()
-     or old_entry.voided_at is not null then
+     or old_entry.voided_at is not null
+     or not is_group_member(old_entry.group_id) then
     raise exception 'cannot edit this entry' using errcode = 'EE001';
   end if;
 
