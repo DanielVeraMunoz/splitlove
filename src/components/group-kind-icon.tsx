@@ -25,5 +25,5 @@ const ICONS: Record<GroupKind, IconDefinition> = {
 export function GroupKindIcon({ kind, size = 20 }: { kind: GroupKind; size?: number }) {
   const theme = useTheme();
   // an unknown kind (e.g. a new enum value not yet in the app) falls back to "other"
-  return <FontAwesomeIcon icon={ICONS[kind] ?? faEllipsis} size={size} color={theme.text} />;
+  return <FontAwesomeIcon icon={ICONS[kind] ?? faEllipsis} size={size} color={theme.accent} />;
 }

@@ -43,13 +43,29 @@ Key design choices (and why):
 - **Row Level Security** in the database: a user can only read/write groups they
   belong to, even if the app has a bug.
 
-## Branding ideas (for the polish phase)
+## Branding (decided)
 
-- Wordmark: the "O" in Splitlove as a pixelated 8-bit heart.
-- Logo: a cupid, or an arrow through a heart.
-- Entry categories use Font Awesome icons (SVG), mapped in one file
-  (`src/components/category-icon.tsx`), so swapping them for custom pixel icons is a
-  one-place change.
+- Wordmark: rounded letters (Fredoka) with the "o" of Splitlove as a **pixelated 8-bit heart**.
+- App icon: the pixel heart alone, on dusty rose.
+- Palette: dusty "cupid" pink on a warm background, light and dark. Tokens in
+  `src/constants/theme.ts`. `positive`/`negative` (+N / -N) are kept apart from the brand pink.
+- Typography: Fredoka for titles and numbers, Nunito for text.
+- Category icons: Font Awesome (SVG), mapped in `src/components/category-icon.tsx`, so swapping
+  them for custom pixel icons is a one-place change.
+
+## Ideas parked for later
+
+Principle: the engine stays neutral; the fun lives in the copy and the details, so it works
+the same as a joke or as a serious tool.
+
+- **Medals and streaks**, Duolingo style, with funny names ("Superviviente de Domingo
+  Familiar"). Idea: **"Enamoradísimos"** when the group ends the day (or three days in a row)
+  at 0. Gold is the accent reserved for them. Where they live (a dashboard on entering the app,
+  or inside the group) is still to be decided.
+- **Rewards market** (spend points on coupons: a massage, "pick the movie"). Very on-brand
+  (the market of love) but it conflicts a bit with the "eternal scoreboard". Low priority.
+- Discarded: "settle everything with a kiss" button, a relationship "thermometer" (couples
+  only, and it judges the group), per-person recipients, big point values.
 
 ## Roadmap
 

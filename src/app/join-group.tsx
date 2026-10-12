@@ -1,14 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
-  Pressable,
   StyleSheet,
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -70,16 +69,12 @@ export default function JoinGroupScreen() {
 
           {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
-          <Pressable
-            style={[styles.button, { backgroundColor: theme.text }]}
+          <Button
+            label={t('groups.joinAction')}
             onPress={join}
-            disabled={loading || !code.trim()}>
-            {loading ? (
-              <ActivityIndicator color={theme.background} />
-            ) : (
-              <ThemedText style={{ color: theme.background }}>{t('groups.joinAction')}</ThemedText>
-            )}
-          </Pressable>
+            loading={loading}
+            disabled={!code.trim()}
+          />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -98,10 +93,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
     fontSize: 16,
-  },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
   },
 });

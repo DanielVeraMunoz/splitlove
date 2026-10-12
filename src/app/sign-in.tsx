@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -96,18 +96,12 @@ export default function SignInScreen() {
 
           {message && <ThemedText themeColor="textSecondary">{message}</ThemedText>}
 
-          <Pressable
-            style={[styles.button, { backgroundColor: theme.text }]}
+          <Button
+            label={isSignUp ? t('auth.createAccount') : t('auth.signIn')}
             onPress={submit}
-            disabled={loading || !email || !password || (isSignUp && !displayName.trim())}>
-            {loading ? (
-              <ActivityIndicator color={theme.background} />
-            ) : (
-              <ThemedText style={{ color: theme.background }}>
-                {isSignUp ? t('auth.createAccount') : t('auth.signIn')}
-              </ThemedText>
-            )}
-          </Pressable>
+            loading={loading}
+            disabled={!email || !password || (isSignUp && !displayName.trim())}
+          />
 
           <Pressable onPress={() => setMode(isSignUp ? 'signIn' : 'signUp')}>
             <ThemedText type="link">
@@ -134,10 +128,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
     fontSize: 16,
-  },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
   },
 });

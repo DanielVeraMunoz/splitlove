@@ -4,11 +4,29 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { Colors } from '@/constants/theme';
 import { CloseButton } from '@/components/close-button';
 import { t } from '@/i18n';
 import { SessionProvider, useSession } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync();
+
+// Navigation (headers, screen backgrounds) uses the same tokens as the rest of the app
+const navigationTheme = (scheme: 'light' | 'dark') => {
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const c = Colors[scheme];
+  return {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: c.accent,
+      background: c.background,
+      card: c.background,
+      text: c.text,
+      border: c.backgroundSelected,
+    },
+  };
+};
 
 // Module-level so React Navigation gets the same function every render
 const renderCloseButton = () => <CloseButton />;
@@ -48,7 +66,7 @@ export default function RootLayout() {
   return (
     // Swipe gestures need this wrapper at the root of the app
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
         <SessionProvider>
           <AnimatedSplashOverlay />
           <RootNavigator />

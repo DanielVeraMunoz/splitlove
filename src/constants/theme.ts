@@ -7,24 +7,31 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
+// Palette from the approved visual proposal: dusty "cupid" pink on a warm background.
+// `accent` fills buttons, selected chips and the add button; `onAccent` is the text/icon on it.
+// positive/negative are the +N / -N colors, kept apart from the brand pink on purpose.
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    positive: '#1E9E62',
-    negative: '#D64545',
+    text: '#3A2327',
+    background: '#FBF1F0',
+    backgroundElement: '#F6E2E2',
+    backgroundSelected: '#EDCFD2',
+    textSecondary: '#7E5F65',
+    accent: '#B25666',
+    onAccent: '#FBF1F0',
+    positive: '#2F7A5A',
+    negative: '#B5412F',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    positive: '#4CC38A',
-    negative: '#FF6B6B',
+    text: '#F7E9EA',
+    background: '#1F1416',
+    backgroundElement: '#2D1D20',
+    backgroundSelected: '#3B282C',
+    textSecondary: '#C9A9AE',
+    accent: '#E49AA6',
+    onAccent: '#2A1518',
+    positive: '#7FCBA3',
+    negative: '#F0907F',
   },
 } as const;
 

@@ -30,11 +30,11 @@ const ICONS: Record<CategoryId, IconDefinition> = {
 type Props = {
   category: CategoryId;
   size?: number;
-  // defaults to the normal text colour
+  // defaults to the accent colour
   color?: string;
 };
 
 export function CategoryIcon({ category, size = 20, color }: Props) {
   const theme = useTheme();
-  return <FontAwesomeIcon icon={ICONS[category]} size={size} color={color ?? theme.text} />;
+  return <FontAwesomeIcon icon={ICONS[category]} size={size} color={color ?? theme.accent} />;
 }
