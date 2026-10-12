@@ -20,12 +20,16 @@ Each group decides how to use it (like Telegram: not our responsibility).
 - It is an **eternal scoreboard**: no "settle up" button. You "pay" by doing more things.
 - Categories are **auto-detected from the text** (keyword dictionary, like Splitwise):
   typing "cena" suggests the food category and icon. The user can change it.
-- 1 action = 1 point for now.
+- Each action is worth **1, 2 or 3 points**, chosen when logging it (default 1): putting the
+  dishwasher on is not the same as a sick kid all night. The database enforces the range.
 
 ## Free vs Premium
 
-**Not in this phase.** Everyone gets the same app for now. Later: custom points,
-custom actions and a daily entry limit (enforced server-side).
+**Not in this phase.** Everyone gets the same app for now.
+
+Idea for later (like Splitwise): the free tier limits how many entries you can log per day;
+premium removes the limit (the number is still to be decided). It has to be enforced
+server-side, because a limit in the app is trivial to bypass.
 
 ## Stack
 
@@ -53,7 +57,7 @@ Key design choices (and why):
    Splitwise-style balance summary, history, void entry.
 2. **Personality**: Duolingo-like animations/streaks, satirical copy.
 3. **Awareness layer**: chore distribution chart, weekly summary.
-4. **Premium**: custom points/actions, daily limit, RevenueCat.
+4. **Premium**: lift the daily entry limit, custom actions, RevenueCat.
 
 ## Git workflow (Claude drives it)
 
