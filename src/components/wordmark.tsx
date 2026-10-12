@@ -25,7 +25,7 @@ export function Wordmark({ size = 24 }: { size?: number }) {
 
   return (
     // read as one word, not as three pieces and an unlabeled drawing
-    <View style={styles.row} accessible accessibilityRole="header" accessibilityLabel="Splitlove">
+    <View style={styles.row} accessible accessibilityLabel="Splitlove">
       <ThemedText style={text}>Splitl</ThemedText>
       <PixelHeart width={size * 0.72} color={theme.accent} />
       <ThemedText style={text}>ve</ThemedText>

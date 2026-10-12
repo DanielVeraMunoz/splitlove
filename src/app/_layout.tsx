@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
@@ -71,8 +72,15 @@ export default function RootLayout() {
   const [fontsLoaded, fontsError] = useFonts({ Fredoka_600SemiBold, Nunito_500Medium, Nunito_700Bold });
 
   // The native splash stays up (preventAutoHideAsync above) until the fonts are ready.
-  // If they fail to load we carry on with system fonts instead of a blank screen.
-  if (!fontsLoaded && !fontsError) return null;
+  // If they fail, or simply never answer, we carry on with system fonts after a few
+  // seconds instead of leaving the user on the splash forever.
+  const [fontsTimedOut, setFontsTimedOut] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setFontsTimedOut(true), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!fontsLoaded && !fontsError && !fontsTimedOut) return null;
 
   return (
     // Swipe gestures need this wrapper at the root of the app
