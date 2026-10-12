@@ -62,6 +62,9 @@ export const es = {
     owesYou: '{{name}} te debe {{points}}',
     owes: '{{debtor}} debe {{points}} a {{creditor}}',
     even: 'Estáis a la par.',
+    totalOwedToYou: 'Te deben {{points}}',
+    totalYouOwe: 'Debes {{points}}',
+    totalEven: 'A la par',
   },
   groups: {
     yourGroups: 'Tus grupos',

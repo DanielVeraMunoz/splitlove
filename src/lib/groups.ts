@@ -14,5 +14,4 @@ export type Group = {
   id: string;
   name: string;
   kind: GroupKind;
-  invite_code: string;
 };
