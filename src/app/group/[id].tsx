@@ -52,9 +52,14 @@ export default function GroupScreen() {
   const [error, setError] = useState<string | null>(null);
   // guards against a double tap pushing the modal twice
   const opening = useRef(false);
+  // cancels the previous load when a new one starts (so an old answer can't overwrite a new one)
+  const cancelLoad = useRef<(() => void) | null>(null);
+  // every row's swipe controls by entry id, so opening one can close the others
+  const rowRefs = useRef(new Map<string, SwipeableMethods>());
 
   // Returns a cleanup function that makes a late answer be ignored
   const load = useCallback(() => {
+    cancelLoad.current?.();
     let ignore = false;
 
     // Independent queries, run in parallel. The two views are computed by the
@@ -100,9 +105,11 @@ export default function GroupScreen() {
       },
     );
 
-    return () => {
+    const cleanup = () => {
       ignore = true;
     };
+    cancelLoad.current = cleanup;
+    return cleanup;
   }, [id]);
 
   // Reload every time the screen gains focus (e.g. after adding an entry)
@@ -196,14 +203,21 @@ export default function GroupScreen() {
 
             // only whoever logged an entry may void it (the database enforces it too)
             const canVoid = item.created_by === myId;
+            const pointsLabel = t(mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
+              points: formatPoints(item.points),
+            });
 
             const row = (
               <ThemedView
                 type="backgroundElement"
                 style={styles.row}
+                // One focus stop per entry, read as a whole
+                accessible
+                accessibilityLabel={`${item.label}. ${doneBy}. ${day}. ${pointsLabel}`}
                 // swipe gestures are out of reach for screen readers: offer an action instead
-                accessible={canVoid}
-                accessibilityActions={canVoid ? [{ name: 'void', label: t('entries.voidAction') }] : undefined}
+                accessibilityActions={
+                  canVoid ? [{ name: 'void', label: t('entries.voidAction') }] : undefined
+                }
                 onAccessibilityAction={(event) => {
                   if (event.nativeEvent.actionName === 'void') confirmVoid(item);
                 }}>
@@ -221,9 +235,7 @@ export default function GroupScreen() {
                   type="smallBold"
                   themeColor={mine ? 'positive' : 'negative'}
                   style={styles.points}
-                  accessibilityLabel={t(mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
-                    points: formatPoints(item.points),
-                  })}>
+                  accessibilityLabel={pointsLabel}>
                   {`${mine ? '+' : '-'}${item.points}`}
                 </ThemedText>
               </ThemedView>
@@ -233,7 +245,11 @@ export default function GroupScreen() {
 
             // Same red action whichever way you swipe. It asks for confirmation:
             // voiding changes everyone's balance.
-            const voidAction = (_progress: unknown, _translation: unknown, swipe: SwipeableMethods) => (
+            const voidAction = (
+              _progress: unknown,
+              _translation: unknown,
+              swipe: SwipeableMethods,
+            ) => (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel={t('entries.voidAction')}
@@ -242,8 +258,8 @@ export default function GroupScreen() {
                   swipe.close();
                   confirmVoid(item);
                 }}>
-                <FontAwesomeIcon icon={faTrash} size={18} color="#fff" />
-                <ThemedText type="small" style={styles.voidActionText}>
+                <FontAwesomeIcon icon={faTrash} size={18} color={theme.background} />
+                <ThemedText type="small" style={{ color: theme.background }}>
                   {t('entries.voidAction')}
                 </ThemedText>
               </Pressable>
@@ -254,7 +270,16 @@ export default function GroupScreen() {
                 renderLeftActions={voidAction}
                 renderRightActions={voidAction}
                 overshootLeft={false}
-                overshootRight={false}>
+                overshootRight={false}
+                ref={(swipe) => {
+                  if (swipe) rowRefs.current.set(item.id, swipe);
+                  else rowRefs.current.delete(item.id);
+                }}
+                onSwipeableOpen={() => {
+                  rowRefs.current.forEach((other, id) => {
+                    if (id !== item.id) other.close();
+                  });
+                }}>
                 {row}
               </ReanimatedSwipeable>
             );
@@ -308,7 +333,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.one,
   },
-  voidActionText: { color: '#fff' },
   rowText: { flex: 1 },
   points: { fontSize: 20, lineHeight: 28 },
   // room so the floating button never hides the last entry
