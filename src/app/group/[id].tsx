@@ -1,7 +1,7 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +12,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
+import { formatPoints } from '@/lib/format';
 import { isCategoryId } from '@/lib/categories';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -25,6 +26,10 @@ type Entry = {
   category: string;
   created_at: string;
 };
+
+// The floating button and the list padding derive from the same numbers
+const FAB_SIZE = 64;
+const FAB_OFFSET = Spacing.four;
 
 type MemberRow = { user_id: string; profiles: { display_name: string } | null };
 
@@ -41,6 +46,8 @@ export default function GroupScreen() {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // guards against a double tap pushing the modal twice
+  const opening = useRef(false);
 
   // Returns a cleanup function that makes a late answer be ignored
   const load = useCallback(() => {
@@ -96,6 +103,11 @@ export default function GroupScreen() {
 
   // Reload every time the screen gains focus (e.g. after adding an entry)
   useFocusEffect(load);
+  useFocusEffect(
+    useCallback(() => {
+      opening.current = false;
+    }, []),
+  );
 
   // Group by month, like Splitwise. Entries arrive newest first, so order is kept.
   const sections = useMemo(() => {
@@ -193,9 +205,14 @@ export default function GroupScreen() {
                     </ThemedText>
                   </View>
                   {/* From my point of view: +N if I did it, -N if someone else did (I owe it) */}
-                  <ThemedText type="smallBold" themeColor={mine ? 'positive' : 'negative'} style={styles.points}>
-                    {mine ? '+' : '-'}
-                    {item.points}
+                  <ThemedText
+                    type="smallBold"
+                    themeColor={mine ? 'positive' : 'negative'}
+                    style={styles.points}
+                    accessibilityLabel={t(mine ? 'entries.pointsGained' : 'entries.pointsOwed', {
+                      points: formatPoints(item.points),
+                    })}>
+                    {`${mine ? '+' : '-'}${item.points}`}
                   </ThemedText>
                 </ThemedView>
               </Pressable>
@@ -208,8 +225,15 @@ export default function GroupScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('entries.add')}
-            style={[styles.fab, { backgroundColor: theme.text }]}
-            onPress={() => router.push({ pathname: '/new-entry', params: { groupId: id } })}>
+            style={({ pressed }) => [
+              styles.fab,
+              { backgroundColor: theme.text, opacity: pressed ? 0.7 : 1 },
+            ]}
+            onPress={() => {
+              if (opening.current) return;
+              opening.current = true;
+              router.push({ pathname: '/new-entry', params: { groupId: id } });
+            }}>
             <FontAwesomeIcon icon={faPlus} size={24} color={theme.background} />
           </Pressable>
         </View>
@@ -246,18 +270,18 @@ const styles = StyleSheet.create({
   rowText: { flex: 1 },
   points: { fontSize: 20, lineHeight: 28 },
   // room so the floating button never hides the last entry
-  listWithFab: { paddingBottom: 112 },
+  listWithFab: { paddingBottom: FAB_SIZE + FAB_OFFSET + Spacing.four },
   fabWrapper: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: Spacing.four,
+    bottom: FAB_OFFSET,
     alignItems: 'center',
   },
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: FAB_SIZE,
+    height: FAB_SIZE,
+    borderRadius: FAB_SIZE / 2,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

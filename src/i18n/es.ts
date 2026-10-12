@@ -40,6 +40,8 @@ export const es = {
     empty: 'Todavía no hay nada apuntado. ¡Empieza tú!',
     doneBy: 'Lo hizo {{name}}',
     doneByYou: 'Lo hiciste tú',
+    pointsGained: 'Te suman {{points}}',
+    pointsOwed: 'Debes {{points}}',
     you: 'Tú',
     voidTitle: '¿Anular este apunte?',
     voidMessage: 'Dejará de contar. El historial se conserva.',
