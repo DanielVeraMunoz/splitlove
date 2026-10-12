@@ -158,6 +158,8 @@ function Chip({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
       style={[styles.chip, { backgroundColor: selected ? theme.text : theme.backgroundElement }]}>
       {category && <CategoryIcon category={category} size={14} color={color} />}
       <ThemedText style={{ color }}>{label}</ThemedText>
