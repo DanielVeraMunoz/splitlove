@@ -16,14 +16,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setIsLoading(false);
-    });
+    // If an auth event arrives before getSession() resolves, it is newer: keep it.
+    let gotAuthEvent = false;
+
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!gotAuthEvent) setSession(data.session);
+      })
+      .catch(() => {
+        // unreadable stored session: behave as logged out instead of hanging
+      })
+      .finally(() => setIsLoading(false));
 
     // Fires on sign in, sign out and token refresh. Keep it synchronous:
     // awaiting other Supabase calls inside this callback can deadlock the client.
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      gotAuthEvent = true;
       setSession(nextSession);
     });
 
