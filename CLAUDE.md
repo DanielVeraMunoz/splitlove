@@ -22,8 +22,9 @@ for the data model.
 
 - `npx expo start` - dev server (open with Expo Go)
 - `npx expo lint` - lint
-- `npx tsc --noEmit` - typecheck (known template errors about CSS imports in
-  `animated-icon.web.tsx` and `theme.ts`; web only)
+- `npx tsc --noEmit` - typecheck (passes clean)
+- Known lint error from the template, web only and not ours: `src/hooks/use-color-scheme.web.ts`
+  (setState in an effect). Everything else must be clean.
 - Add dependencies with `npx expo install <pkg>`, never `npm install`.
 
 ## Rules of the domain
