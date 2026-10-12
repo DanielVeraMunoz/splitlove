@@ -3,9 +3,20 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { CloseButton } from '@/components/close-button';
+import { t } from '@/i18n';
 import { SessionProvider, useSession } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync();
+
+// Same look for every modal: its own title and an X to close it
+const modalOptions = (title: string) => ({
+  presentation: 'modal' as const,
+  headerShown: true,
+  title,
+  headerShadowVisible: false,
+  headerRight: () => <CloseButton />,
+});
 
 function RootNavigator() {
   const { session, isLoading } = useSession();
@@ -17,9 +28,9 @@ function RootNavigator() {
       <Stack.Protected guard={!!session}>
         <Stack.Screen name="(app)" />
         <Stack.Screen name="group/[id]" options={{ headerShown: true, title: '' }} />
-        <Stack.Screen name="new-entry" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="new-group" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="join-group" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="new-entry" options={modalOptions(t('entries.newTitle'))} />
+        <Stack.Screen name="new-group" options={modalOptions(t('groups.newTitle'))} />
+        <Stack.Screen name="join-group" options={modalOptions(t('groups.joinTitle'))} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="sign-in" />

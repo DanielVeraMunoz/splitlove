@@ -88,11 +88,10 @@ export default function NewEntryScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <KeyboardAvoidingView
           style={styles.form}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="subtitle">{t('entries.newTitle')}</ThemedText>
 
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}

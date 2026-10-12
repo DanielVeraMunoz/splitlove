@@ -52,11 +52,10 @@ export default function JoinGroupScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <KeyboardAvoidingView
           style={styles.form}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <ThemedText type="subtitle">{t('groups.joinTitle')}</ThemedText>
 
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
