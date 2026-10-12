@@ -5,6 +5,8 @@ import { useCallback, useState } from 'react';
 import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { GroupKindIcon } from '@/components/group-kind-icon';
+import { IconBadge } from '@/components/icon-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -77,6 +79,9 @@ export default function HomeScreen() {
             <Pressable
               onPress={() => router.push({ pathname: '/group/[id]', params: { id: item.id } })}>
               <ThemedView type="backgroundElement" style={styles.card}>
+                <IconBadge>
+                  <GroupKindIcon kind={item.kind} />
+                </IconBadge>
                 <View style={styles.cardText}>
                   <ThemedText type="smallBold">{item.name}</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary">
