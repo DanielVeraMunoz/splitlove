@@ -11,8 +11,9 @@ import { SessionProvider, useSession } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync();
 
-// Navigation (headers, screen backgrounds) uses the same tokens as the rest of the app
-const navigationTheme = (scheme: 'light' | 'dark') => {
+// Navigation (headers, screen backgrounds) uses the same tokens as the rest of the app.
+// Built once per scheme, so the provider always receives the same object.
+const buildNavigationTheme = (scheme: 'light' | 'dark') => {
   const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
   const c = Colors[scheme];
   return {
@@ -27,6 +28,7 @@ const navigationTheme = (scheme: 'light' | 'dark') => {
     },
   };
 };
+const NAVIGATION_THEMES = { light: buildNavigationTheme('light'), dark: buildNavigationTheme('dark') };
 
 // Module-level so React Navigation gets the same function every render
 const renderCloseButton = () => <CloseButton />;
@@ -66,7 +68,7 @@ export default function RootLayout() {
   return (
     // Swipe gestures need this wrapper at the root of the app
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
+      <ThemeProvider value={NAVIGATION_THEMES[colorScheme === 'dark' ? 'dark' : 'light']}>
         <SessionProvider>
           <AnimatedSplashOverlay />
           <RootNavigator />

@@ -17,7 +17,7 @@ export const Colors = {
     backgroundElement: '#F6E2E2',
     backgroundSelected: '#EDCFD2',
     textSecondary: '#7E5F65',
-    accent: '#B25666',
+    accent: '#A24858', // 5.3:1 against onAccent; #B25666 from the mock-up was only 4.3:1
     onAccent: '#FBF1F0',
     positive: '#2F7A5A',
     negative: '#B5412F',
