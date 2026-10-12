@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { MODAL_DISMISS_MS, useCelebration } from '@/components/celebration';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { FontFamily, Spacing } from '@/constants/theme';
@@ -17,6 +18,7 @@ import { supabase } from '@/lib/supabase';
 
 export default function JoinGroupScreen() {
   const theme = useTheme();
+  const { celebrate } = useCelebration();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +41,8 @@ export default function JoinGroupScreen() {
         // the server answers null when the code doesn't exist
         setError(t('groups.invalidCode'));
       } else {
+        // wait until the modal has left, or it would cover the first arrow
+        celebrate({ delayMs: MODAL_DISMISS_MS });
         router.back();
         return; // the screen is closing: don't touch its state any more
       }

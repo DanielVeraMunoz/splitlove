@@ -9,6 +9,7 @@ import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/splash-overlay';
 import { Colors, FontFamily } from '@/constants/theme';
+import { CelebrationProvider } from '@/components/celebration';
 import { CloseButton } from '@/components/close-button';
 import { t } from '@/i18n';
 import { SessionProvider, useSession } from '@/lib/session';
@@ -87,8 +88,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={NAVIGATION_THEMES[colorScheme === 'dark' ? 'dark' : 'light']}>
         <SessionProvider>
+          <CelebrationProvider>
+            <RootNavigator />
+          </CelebrationProvider>
           <AnimatedSplashOverlay />
-          <RootNavigator />
         </SessionProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

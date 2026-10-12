@@ -68,8 +68,16 @@ the same as a joke or as a serious tool.
   or inside the group) is still to be decided.
 - **Rewards market** (spend points on coupons: a massage, "pick the movie"). Very on-brand
   (the market of love) but it conflicts a bit with the "eternal scoreboard". Low priority.
-- Discarded: "settle everything with a kiss" button, a relationship "thermometer" (couples
-  only, and it judges the group), per-person recipients, big point values.
+- **Fairness comparator** (idea from the Stitch proposal): a simple chart of who does what
+  share of the points ("52% vs 48%"). Fits the awareness layer (phase 3), especially for the
+  feminist use and flatmates.
+- **Cupid arrows animation** (also from Stitch, done): the button stays "Apuntar"; the arrows are
+  the reward for a successful action.
+- Stitch's "comic multipliers" (+10% for smiling) clash with the 1 to 3 points; kept only as a
+  joke idea, not a plan.
+- Discarded: "settle everything with a kiss" button, "forgive any debt instantly" (breaks the
+  eternal scoreboard), a relationship "thermometer" (couples only, and it judges the group),
+  per-person recipients, big point values.
 
 ## Roadmap
 
