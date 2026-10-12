@@ -1,5 +1,5 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faPlus, faTrash, type IconDefinition } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, SectionList, StyleSheet, View } from 'react-native';
@@ -151,6 +151,22 @@ export default function GroupScreen() {
     ]);
   }
 
+  // Editing opens the same form as a new entry, prefilled. The server then voids this entry
+  // and creates the corrected one (see supabase/migrations/..._edit_entry.sql).
+  function editEntry(entry: Entry) {
+    router.push({
+      pathname: '/new-entry',
+      params: {
+        groupId: id,
+        entryId: entry.id,
+        label: entry.label,
+        category: entry.category,
+        points: String(entry.points),
+        authorId: entry.author_id,
+      },
+    });
+  }
+
   async function voidEntry(entry: Entry) {
     // Entries are never deleted: voiding keeps the history. .select() lets us
     // see whether the database actually changed a row (RLS silently skips ones
@@ -231,9 +247,15 @@ export default function GroupScreen() {
                 accessibilityLabel={`${item.label}. ${doneBy}. ${day}. ${pointsLabel}`}
                 // swipe gestures are out of reach for screen readers: offer an action instead
                 accessibilityActions={
-                  canVoid ? [{ name: 'void', label: t('entries.voidAction') }] : undefined
+                  canVoid
+                    ? [
+                        { name: 'edit', label: t('entries.edit') },
+                        { name: 'void', label: t('entries.voidAction') },
+                      ]
+                    : undefined
                 }
                 onAccessibilityAction={(event) => {
+                  if (event.nativeEvent.actionName === 'edit') editEntry(item);
                   if (event.nativeEvent.actionName === 'void') confirmVoid(item);
                 }}>
                 <IconBadge>
@@ -260,32 +282,50 @@ export default function GroupScreen() {
 
             if (!canVoid) return row;
 
-            // Same red action whichever way you swipe. It asks for confirmation:
-            // voiding changes everyone's balance.
-            const voidAction = (
-              _progress: unknown,
-              _translation: unknown,
-              swipe: SwipeableMethods,
-            ) => (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('entries.voidAction')}
-                style={[styles.voidAction, { backgroundColor: theme.negative }]}
-                onPress={() => {
-                  swipe.close();
-                  confirmVoid(item);
-                }}>
-                <FontAwesomeIcon icon={faTrash} size={18} color={theme.background} />
-                <ThemedText type="small" style={{ color: theme.background }}>
-                  {t('entries.voidAction')}
-                </ThemedText>
-              </Pressable>
+            // One button style for both sides. Deleting asks for confirmation: it changes
+            // everyone's balance.
+            const swipeAction = (
+              icon: IconDefinition,
+              label: string,
+              colors: { background: string; content: string },
+              onPress: () => void,
+            ) =>
+              function SwipeAction(_progress: unknown, _translation: unknown, swipe: SwipeableMethods) {
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    style={[styles.swipeAction, { backgroundColor: colors.background }]}
+                    onPress={() => {
+                      swipe.close();
+                      onPress();
+                    }}>
+                    <FontAwesomeIcon icon={icon} size={18} color={colors.content} />
+                    <ThemedText type="small" style={{ color: colors.content }}>
+                      {label}
+                    </ThemedText>
+                  </Pressable>
+                );
+              };
+
+            // Swipe RIGHT reveals what is on the LEFT edge: edit. Swipe LEFT: delete.
+            const editAction = swipeAction(
+              faPen,
+              t('entries.edit'),
+              { background: theme.accent, content: theme.onAccent },
+              () => editEntry(item),
+            );
+            const deleteAction = swipeAction(
+              faTrash,
+              t('entries.voidAction'),
+              { background: theme.negative, content: theme.background },
+              () => confirmVoid(item),
             );
 
             return (
               <ReanimatedSwipeable
-                renderLeftActions={voidAction}
-                renderRightActions={voidAction}
+                renderLeftActions={editAction}
+                renderRightActions={deleteAction}
                 overshootLeft={false}
                 overshootRight={false}
                 ref={(swipe) => {
@@ -346,7 +386,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: Spacing.three,
   },
-  voidAction: {
+  swipeAction: {
     width: 88,
     borderRadius: Radius.card,
     alignItems: 'center',
