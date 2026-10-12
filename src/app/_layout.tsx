@@ -9,13 +9,16 @@ import { SessionProvider, useSession } from '@/lib/session';
 
 SplashScreen.preventAutoHideAsync();
 
+// Module-level so React Navigation gets the same function every render
+const renderCloseButton = () => <CloseButton />;
+
 // Same look for every modal: its own title and an X to close it
 const modalOptions = (title: string) => ({
   presentation: 'modal' as const,
   headerShown: true,
   title,
   headerShadowVisible: false,
-  headerRight: () => <CloseButton />,
+  headerRight: renderCloseButton,
 });
 
 function RootNavigator() {

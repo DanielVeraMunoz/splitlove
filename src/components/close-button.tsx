@@ -14,7 +14,8 @@ export function CloseButton() {
       accessibilityRole="button"
       accessibilityLabel={t('common.close')}
       hitSlop={12}
-      onPress={() => router.back()}>
+      // with no history (e.g. opened by a link) there is nothing to go back to
+      onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}>
       <FontAwesomeIcon icon={faXmark} size={20} color={theme.text} />
     </Pressable>
   );

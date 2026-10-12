@@ -2,8 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
+  ScrollView,
   Pressable,
   StyleSheet,
   TextInput,
@@ -51,10 +50,11 @@ export default function NewGroupScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-        <KeyboardAvoidingView
-          style={styles.form}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-
+        <ScrollView
+          contentContainerStyle={styles.form}
+          // iOS: scroll content above the keyboard by itself (no header height needed)
+          automaticallyAdjustKeyboardInsets
+          keyboardShouldPersistTaps="handled">
           <TextInput
             style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
             placeholder={t('groups.namePlaceholder')}
@@ -96,7 +96,7 @@ export default function NewGroupScreen() {
               <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
             )}
           </Pressable>
-        </KeyboardAvoidingView>
+        </ScrollView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1 },
   form: {
-    flex: 1,
     gap: Spacing.three,
     padding: Spacing.four,
   },
