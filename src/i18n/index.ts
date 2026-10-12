@@ -16,6 +16,9 @@ type Leaves<T, Prefix extends string = ''> = {
   [K in keyof T & string]: T[K] extends string ? `${Prefix}${K}` : Leaves<T[K], `${Prefix}${K}.`>;
 }[keyof T & string];
 
+// Also used to format dates in the same language as the texts
+export const locale = i18n.locale;
+
 export type TranslationKey = Leaves<Translations>;
 
 type Options = Record<string, string | number>;

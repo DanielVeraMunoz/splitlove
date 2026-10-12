@@ -1,0 +1,172 @@
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Button } from '@/components/button';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { t } from '@/i18n';
+import { CATEGORIES, CATEGORY_IDS, detectCategory, type CategoryId } from '@/lib/categories';
+import { useSession } from '@/lib/session';
+import { supabase } from '@/lib/supabase';
+
+type Member = { user_id: string; name: string };
+
+export default function NewEntryScreen() {
+  const theme = useTheme();
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const { session } = useSession();
+  const myId = session?.user.id;
+
+  const [members, setMembers] = useState<Member[]>([]);
+  const [label, setLabel] = useState('');
+  const [authorId, setAuthorId] = useState<string | undefined>(myId);
+  // null = nobody chose: follow the detector while the user types
+  const [manualCategory, setManualCategory] = useState<CategoryId | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const category = manualCategory ?? detectCategory(label);
+
+  useEffect(() => {
+    let ignore = false;
+    supabase
+      .from('group_members')
+      .select('user_id, profiles(display_name)')
+      .eq('group_id', groupId)
+      .then(
+        ({ data }) => {
+          if (ignore || !data) return;
+          setMembers(
+            (data as unknown as { user_id: string; profiles: { display_name: string } | null }[]).map(
+              (row) => ({ user_id: row.user_id, name: row.profiles?.display_name ?? '?' }),
+            ),
+          );
+        },
+        () => {
+          if (!ignore) setError(t('common.networkError'));
+        },
+      );
+    return () => {
+      ignore = true;
+    };
+  }, [groupId]);
+
+  async function save() {
+    if (!myId || !authorId) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error: insertError } = await supabase.from('entries').insert({
+        group_id: groupId,
+        author_id: authorId, // who DID it
+        created_by: myId, // who LOGGED it (RLS requires it to be you)
+        label: label.trim(),
+        category,
+      });
+      if (!insertError) {
+        router.back();
+        return; // the screen is closing: don't touch its state any more
+      }
+      setError(t('common.networkError'));
+    } catch {
+      setError(t('common.networkError'));
+    }
+    setLoading(false);
+  }
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          style={styles.form}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ThemedText type="subtitle">{t('entries.newTitle')}</ThemedText>
+
+          <TextInput
+            style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+            placeholder={t('entries.labelPlaceholder')}
+            placeholderTextColor={theme.textSecondary}
+            maxLength={100}
+            value={label}
+            onChangeText={setLabel}
+          />
+
+          <ThemedText type="smallBold">{t('entries.category')}</ThemedText>
+          <View style={styles.chips}>
+            {CATEGORY_IDS.map((id) => (
+              <Chip
+                key={id}
+                selected={id === category}
+                label={`${CATEGORIES[id].emoji} ${t(`categories.${id}`)}`}
+                onPress={() => setManualCategory(id)}
+              />
+            ))}
+          </View>
+
+          <ThemedText type="smallBold">{t('entries.whoDid')}</ThemedText>
+          <View style={styles.chips}>
+            {members.map((member) => (
+              <Chip
+                key={member.user_id}
+                selected={member.user_id === authorId}
+                label={member.user_id === myId ? t('entries.you') : member.name}
+                onPress={() => setAuthorId(member.user_id)}
+              />
+            ))}
+          </View>
+
+          {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
+
+          <Button
+            label={t('entries.save')}
+            onPress={save}
+            loading={loading}
+            disabled={!label.trim() || !authorId}
+          />
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  const theme = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      style={[styles.chip, { backgroundColor: selected ? theme.text : theme.backgroundElement }]}>
+      <ThemedText style={{ color: selected ? theme.background : theme.text }}>{label}</ThemedText>
+    </Pressable>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  form: {
+    flex: 1,
+    gap: Spacing.three,
+    padding: Spacing.four,
+  },
+  input: {
+    borderRadius: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.three,
+    fontSize: 16,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  chip: {
+    borderRadius: Spacing.four,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two,
+  },
+});

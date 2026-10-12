@@ -72,22 +72,25 @@ export default function HomeScreen() {
             )
           }
           renderItem={({ item }) => (
-            <ThemedView type="backgroundElement" style={styles.card}>
-              <ThemedText type="smallBold">{item.name}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
-              </ThemedText>
-              <Pressable
-                onPress={() =>
-                  Share.share({
-                    message: t('groups.shareMessage', { name: item.name, code: item.invite_code }),
-                  }).catch(() => {
-                    // the share sheet failed to open: nothing useful to tell the user
-                  })
-                }>
-                <ThemedText type="link">{t('groups.shareCode')}</ThemedText>
-              </Pressable>
-            </ThemedView>
+            <Pressable
+              onPress={() => router.push({ pathname: '/group/[id]', params: { id: item.id } })}>
+              <ThemedView type="backgroundElement" style={styles.card}>
+                <ThemedText type="smallBold">{item.name}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {t(`groups.kinds.${item.kind}`, { defaultValue: item.kind })}
+                </ThemedText>
+                <Pressable
+                  onPress={() =>
+                    Share.share({
+                      message: t('groups.shareMessage', { name: item.name, code: item.invite_code }),
+                    }).catch(() => {
+                      // the share sheet failed to open: nothing useful to tell the user
+                    })
+                  }>
+                  <ThemedText type="link">{t('groups.shareCode')}</ThemedText>
+                </Pressable>
+              </ThemedView>
+            </Pressable>
           )}
         />
 

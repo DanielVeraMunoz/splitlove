@@ -39,6 +39,13 @@ Key design choices (and why):
 - **Row Level Security** in the database: a user can only read/write groups they
   belong to, even if the app has a bug.
 
+## Branding ideas (for the polish phase)
+
+- Wordmark: the "O" in Splitlove as a pixelated 8-bit heart.
+- Logo: a cupid, or an arrow through a heart.
+- Entry categories use emojis for now; they live in one file (`src/lib/categories.ts`)
+  so swapping them for custom pixel icons is a one-place change.
+
 ## Roadmap
 
 1. **MVP**: auth, create/join group (invite code), fixed catalogue, add entry,
