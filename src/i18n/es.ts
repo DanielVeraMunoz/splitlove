@@ -37,6 +37,7 @@ export const es = {
     labelPlaceholder: '¿Qué has hecho?',
     whoDid: '¿Quién lo ha hecho?',
     category: 'Categoría',
+    points: 'Puntos',
     save: 'Apuntar',
     empty: 'Todavía no hay nada apuntado. ¡Empieza tú!',
     doneBy: 'Lo hizo {{name}}',

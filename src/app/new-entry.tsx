@@ -11,6 +11,8 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { t } from '@/i18n';
 import { CATEGORY_IDS, detectCategory, type CategoryId } from '@/lib/categories';
+import { formatPoints } from '@/lib/format';
+import { POINT_OPTIONS, type Points } from '@/lib/points';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 
@@ -28,6 +30,7 @@ export default function NewEntryScreen() {
   const [authorId, setAuthorId] = useState<string | undefined>(undefined);
   // null = nobody chose: follow the detector while the user types
   const [manualCategory, setManualCategory] = useState<CategoryId | null>(null);
+  const [points, setPoints] = useState<Points>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +77,7 @@ export default function NewEntryScreen() {
         created_by: myId, // who LOGGED it (RLS requires it to be you)
         label: label.trim(),
         category,
+        points,
       });
       if (!insertError) {
         router.back();
@@ -116,6 +120,19 @@ export default function NewEntryScreen() {
             ))}
           </View>
 
+          <ThemedText type="smallBold">{t('entries.points')}</ThemedText>
+          <View style={styles.chips}>
+            {POINT_OPTIONS.map((option) => (
+              <Chip
+                key={option}
+                selected={option === points}
+                label={String(option)}
+                accessibilityLabel={formatPoints(option)}
+                onPress={() => setPoints(option)}
+              />
+            ))}
+          </View>
+
           <ThemedText type="smallBold">{t('entries.whoDid')}</ThemedText>
           <View style={styles.chips}>
             {members.map((member) => (
@@ -147,8 +164,10 @@ function Chip({
   selected,
   onPress,
   category,
+  accessibilityLabel,
 }: {
   label: string;
+  accessibilityLabel?: string;
   selected: boolean;
   onPress: () => void;
   category?: CategoryId;
@@ -159,6 +178,7 @@ function Chip({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       accessibilityState={{ selected }}
       style={[styles.chip, { backgroundColor: selected ? theme.text : theme.backgroundElement }]}>
       {category && <CategoryIcon category={category} size={14} color={color} />}
