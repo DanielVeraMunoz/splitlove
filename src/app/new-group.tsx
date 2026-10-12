@@ -1,6 +1,14 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
@@ -28,60 +36,67 @@ export default function NewGroupScreen() {
         p_name: name.trim(),
         p_kind: kind,
       });
-      if (rpcError) setError(rpcError.message);
-      else router.back();
+      if (!rpcError) {
+        router.back();
+        return; // the screen is closing: don't touch its state any more
+      }
+      setError(rpcError.message);
     } catch {
       setError('Something went wrong. Check your connection and try again.');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
-        <ThemedText type="subtitle">New group</ThemedText>
+        <KeyboardAvoidingView
+          style={styles.form}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          <ThemedText type="subtitle">New group</ThemedText>
 
-        <TextInput
-          style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-          placeholder="Group name"
-          placeholderTextColor={theme.textSecondary}
-          value={name}
-          onChangeText={setName}
-        />
+          <TextInput
+            style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+            placeholder="Group name"
+            placeholderTextColor={theme.textSecondary}
+            maxLength={50}
+            value={name}
+            onChangeText={setName}
+          />
 
-        <ThemedText type="smallBold">What are you?</ThemedText>
-        <View style={styles.chips}>
-          {GROUP_KINDS.map((option) => {
-            const selected = option.value === kind;
-            return (
-              <Pressable
-                key={option.value}
-                onPress={() => setKind(option.value)}
-                style={[
-                  styles.chip,
-                  { backgroundColor: selected ? theme.text : theme.backgroundElement },
-                ]}>
-                <ThemedText style={{ color: selected ? theme.background : theme.text }}>
-                  {option.label}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
+          <ThemedText type="smallBold">What are you?</ThemedText>
+          <View style={styles.chips}>
+            {GROUP_KINDS.map((option) => {
+              const selected = option.value === kind;
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() => setKind(option.value)}
+                  style={[
+                    styles.chip,
+                    { backgroundColor: selected ? theme.text : theme.backgroundElement },
+                  ]}>
+                  <ThemedText style={{ color: selected ? theme.background : theme.text }}>
+                    {option.label}
+                  </ThemedText>
+                </Pressable>
+              );
+            })}
+          </View>
 
-        {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
+          {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
-        <Pressable
-          style={[styles.button, { backgroundColor: theme.text }]}
-          onPress={create}
-          disabled={loading || !name.trim() || !kind}>
-          {loading ? (
-            <ActivityIndicator color={theme.background} />
-          ) : (
-            <ThemedText style={{ color: theme.background }}>Create group</ThemedText>
-          )}
-        </Pressable>
+          <Pressable
+            style={[styles.button, { backgroundColor: theme.text }]}
+            onPress={create}
+            disabled={loading || !name.trim() || !kind}>
+            {loading ? (
+              <ActivityIndicator color={theme.background} />
+            ) : (
+              <ThemedText style={{ color: theme.background }}>Create group</ThemedText>
+            )}
+          </Pressable>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </ThemedView>
   );
@@ -89,7 +104,8 @@ export default function NewGroupScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  safeArea: {
+  safeArea: { flex: 1 },
+  form: {
     flex: 1,
     gap: Spacing.three,
     padding: Spacing.four,

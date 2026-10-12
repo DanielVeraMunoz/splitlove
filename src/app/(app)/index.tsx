@@ -14,21 +14,37 @@ export default function HomeScreen() {
   const theme = useTheme();
   const [groups, setGroups] = useState<Group[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Reload every time the screen gains focus, so a group just created shows up
   useFocusEffect(
     useCallback(() => {
+      // If we leave the screen before the answer arrives, ignore it
+      let ignore = false;
+
       supabase
         .from('groups')
         .select('id, name, kind')
         .order('created_at', { ascending: false })
         .then(({ data, error: queryError }) => {
-          if (queryError) setError(queryError.message);
-          else {
+          if (ignore) return;
+          if (queryError) {
+            setError(queryError.message);
+          } else {
             setError(null);
             setGroups(data as Group[]);
           }
+        })
+        .catch(() => {
+          if (!ignore) setError('Could not load your groups. Check your connection.');
+        })
+        .finally(() => {
+          if (!ignore) setLoading(false);
         });
+
+      return () => {
+        ignore = true;
+      };
     }, []),
   );
 
@@ -44,15 +60,18 @@ export default function HomeScreen() {
           keyExtractor={(group) => group.id}
           contentContainerStyle={styles.list}
           ListEmptyComponent={
-            <ThemedText themeColor="textSecondary">
-              No groups yet. Create one to start counting.
-            </ThemedText>
+            // don't claim "no groups" before the first answer arrives
+            loading ? null : (
+              <ThemedText themeColor="textSecondary">
+                No groups yet. Create one to start counting.
+              </ThemedText>
+            )
           }
           renderItem={({ item }) => (
             <ThemedView type="backgroundElement" style={styles.card}>
               <ThemedText type="smallBold">{item.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {GROUP_KINDS.find((kind) => kind.value === item.kind)?.label}
+                {GROUP_KINDS.find((kind) => kind.value === item.kind)?.label ?? item.kind}
               </ThemedText>
             </ThemedView>
           )}
