@@ -39,7 +39,9 @@ RevenueCat for subscriptions in a later phase. Schema: `supabase/schema.sql`.
 Key design choices (and why):
 - **Balances are computed from entries** (`member_points` / `pair_debts` views), never stored,
   so they can never get out of sync.
-- **Entries are voided, never deleted**, so the history stays auditable.
+- **Entries are voided, never deleted or edited in place**, so the history stays auditable.
+  Editing voids the old entry and creates a linked one (`edit_entry`), so a debt can't be
+  rewritten silently.
 - **Row Level Security** in the database: a user can only read/write groups they
   belong to, even if the app has a bug.
 
