@@ -9,7 +9,6 @@ export type CategoryId =
   | 'other';
 
 type Category = {
-  emoji: string;
   // A word matches if it STARTS with a stem ("cocin" -> cocinar, cocinando...)
   stems: string[];
   // Short words that must match whole, or "cole" would also catch "colega"
@@ -20,44 +19,36 @@ type Category = {
 // "Comer con tus padres" has a food word AND a family word; family must win.
 export const CATEGORIES: Record<CategoryId, Category> = {
   family: {
-    emoji: '👨‍👩‍👧',
     stems: ['padre', 'madre', 'suegr', 'abuel', 'navidad', 'cumple', 'familia', 'cunad'],
     exact: ['tio', 'tia', 'tios', 'tias', 'papa', 'mama', 'papas'],
   },
   care: {
-    emoji: '🧸',
     stems: ['nino', 'nina', 'hij', 'bebe', 'pediatr', 'medico', 'doctor', 'guarderia', 'colegio', 'deberes'],
     exact: ['cole'],
   },
   shopping: {
-    emoji: '🛒',
     stems: ['compra', 'farmaci', 'mercad', 'supermercado'],
     exact: ['super'],
   },
   cleaning: {
-    emoji: '🧽',
     stems: ['limpi', 'bano', 'aspir', 'fregar', 'friega', 'plato', 'lavavajilla', 'barrer', 'polvo', 'basura'],
     exact: [],
   },
   // before laundry, so "Reparar la lavadora" is a repair (admin), not laundry
   admin: {
-    emoji: '📋',
     stems: ['factura', 'papeles', 'gestion', 'repara', 'arregl', 'tramite', 'seguro', 'banco', 'impuesto', 'contrat'],
     exact: ['cita', 'citas'],
   },
   laundry: {
-    emoji: '🧺',
     stems: ['lavadora', 'tender', 'tendi', 'planch', 'ropa', 'colada', 'doblar'],
     exact: [],
   },
   food: {
-    emoji: '🍽️',
     // "comer" is exact: as a stem it would also match "comercio"
     stems: ['cena', 'comid', 'cocin', 'desayun', 'almuerz', 'merienda', 'receta'],
     exact: ['comer', 'comemos', 'comiendo'],
   },
   other: {
-    emoji: '✨',
     stems: [],
     exact: [],
   },

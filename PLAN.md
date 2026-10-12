@@ -43,8 +43,9 @@ Key design choices (and why):
 
 - Wordmark: the "O" in Splitlove as a pixelated 8-bit heart.
 - Logo: a cupid, or an arrow through a heart.
-- Entry categories use emojis for now; they live in one file (`src/lib/categories.ts`)
-  so swapping them for custom pixel icons is a one-place change.
+- Entry categories use Font Awesome icons (SVG), mapped in one file
+  (`src/components/category-icon.tsx`), so swapping them for custom pixel icons is a
+  one-place change.
 
 ## Roadmap
 

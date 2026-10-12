@@ -4,12 +4,13 @@ import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/button';
+import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { t } from '@/i18n';
-import { CATEGORIES, CATEGORY_IDS, detectCategory, type CategoryId } from '@/lib/categories';
+import { CATEGORY_IDS, detectCategory, type CategoryId } from '@/lib/categories';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 
@@ -108,7 +109,8 @@ export default function NewEntryScreen() {
               <Chip
                 key={id}
                 selected={id === category}
-                label={`${CATEGORIES[id].emoji} ${t(`categories.${id}`)}`}
+                label={t(`categories.${id}`)}
+                category={id}
                 onPress={() => setManualCategory(id)}
               />
             ))}
@@ -140,13 +142,27 @@ export default function NewEntryScreen() {
   );
 }
 
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+function Chip({
+  label,
+  selected,
+  onPress,
+  category,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+  category?: CategoryId;
+}) {
   const theme = useTheme();
+  const color = selected ? theme.background : theme.text;
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
       style={[styles.chip, { backgroundColor: selected ? theme.text : theme.backgroundElement }]}>
-      <ThemedText style={{ color: selected ? theme.background : theme.text }}>{label}</ThemedText>
+      {category && <CategoryIcon category={category} size={14} color={color} />}
+      <ThemedText style={{ color }}>{label}</ThemedText>
     </Pressable>
   );
 }
@@ -171,6 +187,9 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     borderRadius: Spacing.four,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
