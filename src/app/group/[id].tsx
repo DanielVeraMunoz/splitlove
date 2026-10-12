@@ -308,14 +308,14 @@ export default function GroupScreen() {
             accessibilityLabel={t('entries.add')}
             style={({ pressed }) => [
               styles.fab,
-              { backgroundColor: theme.text, opacity: pressed ? 0.7 : 1 },
+              { backgroundColor: theme.accent, opacity: pressed ? 0.7 : 1 },
             ]}
             onPress={() => {
               if (opening.current) return;
               opening.current = true;
               router.push({ pathname: '/new-entry', params: { groupId: id } });
             }}>
-            <FontAwesomeIcon icon={faPlus} size={24} color={theme.background} />
+            <FontAwesomeIcon icon={faPlus} size={24} color={theme.onAccent} />
           </Pressable>
         </View>
       </SafeAreaView>

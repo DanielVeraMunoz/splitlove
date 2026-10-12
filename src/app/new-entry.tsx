@@ -173,14 +173,14 @@ function Chip({
   category?: CategoryId;
 }) {
   const theme = useTheme();
-  const color = selected ? theme.background : theme.text;
+  const color = selected ? theme.onAccent : theme.text;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ selected }}
-      style={[styles.chip, { backgroundColor: selected ? theme.text : theme.backgroundElement }]}>
+      style={[styles.chip, { backgroundColor: selected ? theme.accent : theme.backgroundElement }]}>
       {category && <CategoryIcon category={category} size={14} color={color} />}
       <ThemedText style={{ color }}>{label}</ThemedText>
     </Pressable>

@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   Pressable,
   StyleSheet,
@@ -10,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -74,9 +74,9 @@ export default function NewGroupScreen() {
                   onPress={() => setKind(option)}
                   style={[
                     styles.chip,
-                    { backgroundColor: selected ? theme.text : theme.backgroundElement },
+                    { backgroundColor: selected ? theme.accent : theme.backgroundElement },
                   ]}>
-                  <ThemedText style={{ color: selected ? theme.background : theme.text }}>
+                  <ThemedText style={{ color: selected ? theme.onAccent : theme.text }}>
                     {t(`groups.kinds.${option}`)}
                   </ThemedText>
                 </Pressable>
@@ -86,16 +86,12 @@ export default function NewGroupScreen() {
 
           {error && <ThemedText themeColor="textSecondary">{error}</ThemedText>}
 
-          <Pressable
-            style={[styles.button, { backgroundColor: theme.text }]}
+          <Button
+            label={t('groups.create')}
             onPress={create}
-            disabled={loading || !name.trim() || !kind}>
-            {loading ? (
-              <ActivityIndicator color={theme.background} />
-            ) : (
-              <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
-            )}
-          </Pressable>
+            loading={loading}
+            disabled={!name.trim() || !kind}
+          />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -124,10 +120,5 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.four,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
-  },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
   },
 });

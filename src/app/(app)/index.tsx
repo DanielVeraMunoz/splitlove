@@ -5,10 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GroupKindIcon } from '@/components/group-kind-icon';
 import { IconBadge } from '@/components/icon-badge';
+import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { t } from '@/i18n';
 import { totalsByGroup, type DebtRow } from '@/lib/balance';
 import { formatPoints } from '@/lib/format';
@@ -17,7 +17,6 @@ import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 
 export default function HomeScreen() {
-  const theme = useTheme();
   const { session } = useSession();
   const myId = session?.user.id;
   const [groups, setGroups] = useState<Group[]>([]);
@@ -116,11 +115,7 @@ export default function HomeScreen() {
           )}
         />
 
-        <Pressable
-          style={[styles.button, { backgroundColor: theme.text }]}
-          onPress={() => router.push('/new-group')}>
-          <ThemedText style={{ color: theme.background }}>{t('groups.create')}</ThemedText>
-        </Pressable>
+        <Button label={t('groups.create')} onPress={() => router.push('/new-group')} />
 
         <Pressable onPress={() => router.push('/join-group')}>
           <ThemedText type="link">{t('groups.join')}</ThemedText>
@@ -173,9 +168,4 @@ const styles = StyleSheet.create({
   },
   cardText: { flex: 1, gap: Spacing.one },
   total: { fontSize: 22, lineHeight: 30 },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-  },
 });

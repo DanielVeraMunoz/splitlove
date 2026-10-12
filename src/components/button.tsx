@@ -17,13 +17,13 @@ export function Button({ label, onPress, loading = false, disabled = false }: Bu
 
   return (
     <Pressable
-      style={[styles.button, { backgroundColor: theme.text, opacity: disabled ? 0.4 : 1 }]}
+      style={[styles.button, { backgroundColor: theme.accent, opacity: disabled ? 0.4 : 1 }]}
       onPress={onPress}
       disabled={inactive}>
       {loading ? (
-        <ActivityIndicator color={theme.background} />
+        <ActivityIndicator color={theme.onAccent} />
       ) : (
-        <ThemedText style={{ color: theme.background }}>{label}</ThemedText>
+        <ThemedText style={{ color: theme.onAccent }}>{label}</ThemedText>
       )}
     </Pressable>
   );
