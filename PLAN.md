@@ -36,8 +36,9 @@ server-side, because a limit in the app is trivial to bypass.
 Custom bottom bar (the native one can't host a button in the middle that isn't a tab):
 **Inicio | Grupos | (+) | Actividad | Perfil**.
 
-- **(+)** logs an action. From outside a group it asks which group (skipped with a single group;
-  with none it offers to create one). Inside a group the group is already chosen.
+- **(+)** logs an action. From the tabs it asks which group (skipped with a single group;
+  with none it offers to create one). Inside a group screen (outside the tabs) that screen has
+  its own + button and the group is already chosen.
 - **Inicio**: dashboard. For now your total across all groups; charts (points per member per
   month, as a line) and medals come later.
 - **Grupos**: the list of groups.

@@ -4,6 +4,7 @@
 export const es = {
   common: {
     close: 'Cerrar',
+    retry: 'Reintentar',
     networkError: 'Algo ha salido mal. Revisa tu conexión e inténtalo de nuevo.',
   },
   tabs: {

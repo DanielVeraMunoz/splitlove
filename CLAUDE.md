@@ -38,5 +38,8 @@ for the data model.
 - Entries are voided (`voided_at`), never deleted, and never updated in place. An edit is the
   `edit_entry` RPC: it voids the old entry and inserts a new one linked by `replaces_entry_id`
   (keeping the date), in one transaction. Only whoever logged an entry can edit or void it.
+- Screens inside the tabs (`src/app/(app)/`) use `SafeAreaView edges={['top']}`: the custom bottom
+  bar (`src/components/bottom-bar.tsx`) already handles the bottom inset. Screens outside the tabs
+  (modals, the group screen) handle their own insets.
 - Never commit secrets. Supabase keys live in `.env` (gitignored). The `anon` key
   is meant for the client; the `service_role` key must never reach the app or the repo.
