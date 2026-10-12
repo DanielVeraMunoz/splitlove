@@ -39,6 +39,7 @@ export const es = {
     save: 'Apuntar',
     empty: 'Todavía no hay nada apuntado. ¡Empieza tú!',
     doneBy: 'Lo hizo {{name}}',
+    doneByYou: 'Lo hiciste tú',
     you: 'Tú',
     voidTitle: '¿Anular este apunte?',
     voidMessage: 'Dejará de contar. El historial se conserva.',

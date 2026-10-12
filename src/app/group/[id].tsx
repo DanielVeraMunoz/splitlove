@@ -1,14 +1,16 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Alert, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BalanceSummary, type Debt, type MemberPoints } from '@/components/balance-summary';
-import { Button } from '@/components/button';
 import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { locale, t } from '@/i18n';
 import { isCategoryId } from '@/lib/categories';
 import { useSession } from '@/lib/session';
@@ -19,6 +21,7 @@ type Entry = {
   author_id: string;
   created_by: string;
   label: string;
+  points: number;
   category: string;
   created_at: string;
 };
@@ -28,6 +31,7 @@ type MemberRow = { user_id: string; profiles: { display_name: string } | null };
 export default function GroupScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { session } = useSession();
+  const theme = useTheme();
   const myId = session?.user.id;
 
   const [groupName, setGroupName] = useState('');
@@ -50,7 +54,7 @@ export default function GroupScreen() {
       supabase.from('group_members').select('user_id, profiles(display_name)').eq('group_id', id),
       supabase
         .from('entries')
-        .select('id, author_id, created_by, label, category, created_at')
+        .select('id, author_id, created_by, label, points, category, created_at')
         .eq('group_id', id)
         .is('voided_at', null)
         .order('created_at', { ascending: false }),
@@ -143,7 +147,7 @@ export default function GroupScreen() {
         <SectionList
           sections={sections}
           keyExtractor={(entry) => entry.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, styles.listWithFab]}
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             // Never show a scoreboard we aren't sure about: not while loading, and not
@@ -165,7 +169,10 @@ export default function GroupScreen() {
           renderItem={({ item }) => {
             // an unknown category (e.g. written straight to the API) shows as "other"
             const category = isCategoryId(item.category) ? item.category : 'other';
-            const who = item.author_id === myId ? t('entries.you') : (names[item.author_id] ?? '?');
+            const mine = item.author_id === myId;
+            const doneBy = mine
+              ? t('entries.doneByYou')
+              : t('entries.doneBy', { name: names[item.author_id] ?? '?' });
             const day = new Date(item.created_at).toLocaleDateString(locale, {
               day: 'numeric',
               month: 'short',
@@ -182,20 +189,29 @@ export default function GroupScreen() {
                   <View style={styles.rowText}>
                     <ThemedText type="smallBold">{item.label}</ThemedText>
                     <ThemedText type="small" themeColor="textSecondary">
-                      {t('entries.doneBy', { name: who })} · {day}
+                      {doneBy} · {day}
                     </ThemedText>
                   </View>
+                  {/* From my point of view: +N if I did it, -N if someone else did (I owe it) */}
+                  <ThemedText type="smallBold" themeColor={mine ? 'positive' : 'negative'} style={styles.points}>
+                    {mine ? '+' : '-'}
+                    {item.points}
+                  </ThemedText>
                 </ThemedView>
               </Pressable>
             );
           }}
         />
 
-        <View style={styles.footer}>
-          <Button
-            label={t('entries.add')}
-            onPress={() => router.push({ pathname: '/new-entry', params: { groupId: id } })}
-          />
+        {/* box-none: the empty area of this wrapper must not block touches on the list */}
+        <View style={styles.fabWrapper} pointerEvents="box-none">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('entries.add')}
+            style={[styles.fab, { backgroundColor: theme.text }]}
+            onPress={() => router.push({ pathname: '/new-entry', params: { groupId: id } })}>
+            <FontAwesomeIcon icon={faPlus} size={24} color={theme.background} />
+          </Pressable>
         </View>
       </SafeAreaView>
     </ThemedView>
@@ -228,5 +244,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   rowText: { flex: 1 },
-  footer: { padding: Spacing.four },
+  points: { fontSize: 20, lineHeight: 28 },
+  // room so the floating button never hides the last entry
+  listWithFab: { paddingBottom: 112 },
+  fabWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: Spacing.four,
+    alignItems: 'center',
+  },
+  fab: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
 });
