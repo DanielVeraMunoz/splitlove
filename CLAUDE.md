@@ -15,7 +15,7 @@ for the data model.
   issue -> branch -> small commits -> PR -> review -> merge.
 - Branch names: `feat/...`, `fix/...`, `chore/...`, `docs/...`, `refactor/...`.
 - Commits follow Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `docs:`).
-- Before merging a PR, run `/code-review` and make sure lint and typecheck pass.
+- Before merging a PR, run `/code-review` and make sure lint, typecheck and `npm test` pass.
 - Merge with squash so `main` stays readable.
 
 ## Commands
@@ -23,6 +23,9 @@ for the data model.
 - `npx expo start` - dev server (open with Expo Go)
 - `npx expo lint` - lint
 - `npx tsc --noEmit` - typecheck (passes clean)
+- `npm test` - unit tests (Jest, `jest-expo` preset). Tests live next to the code in
+  `__tests__/*.test.ts` and import `describe/it/expect` from `@jest/globals` (no global types, so
+  they don't leak into app code). Pure logic (no React Native imports) gets a test when it is written.
 - Known lint error from the template, web only and not ours: `src/hooks/use-color-scheme.web.ts`
   (setState in an effect). Everything else must be clean.
 - Add dependencies with `npx expo install <pkg>`, never `npm install`.

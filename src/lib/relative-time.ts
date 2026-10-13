@@ -21,7 +21,8 @@ function calendarDaysBetween(then: Date, now: Date) {
 export function relativeTime(then: Date, now: Date = new Date()): RelativeTime {
   const diff = now.getTime() - then.getTime();
 
-  // a clock a few seconds off can put "then" slightly in the future: that is still "now"
+  // Anything in the future counts as "now": the entry's time comes from the server and the phone's
+  // clock can lag behind it, by seconds or even minutes.
   if (diff < MINUTE) return { unit: 'now' };
   if (diff < HOUR) return { unit: 'minutes', count: Math.floor(diff / MINUTE) };
 
