@@ -2,12 +2,21 @@
 alter table profiles
   add column if not exists description text check (description is null or char_length(description) <= 140);
 
--- 2) A name must have a real length. NOT VALID: it is enforced for every new write, without
---    failing the migration if an old row happened to be out of range.
+-- 2) A name must have a real length (spaces, tabs and line breaks do not count).
+--    Old rows first: the name used to be unchecked, and a default made from an email prefix
+--    could be long. Anything out of range is shortened (or replaced if it is blank), so the
+--    constraint can be a normal, fully validated one, and updating such a row later won't fail.
+update profiles
+set display_name = case
+  when char_length(btrim(display_name, E' \t\r\n')) = 0 then 'Someone'
+  else left(btrim(display_name, E' \t\r\n'), 40)
+end
+where char_length(btrim(display_name, E' \t\r\n')) not between 1 and 40;
+
 alter table profiles drop constraint if exists profiles_display_name_length;
 alter table profiles
   add constraint profiles_display_name_length
-  check (char_length(btrim(display_name)) between 1 and 40) not valid;
+  check (char_length(btrim(display_name, E' \t\r\n')) between 1 and 40);
 
 -- 3) What a client may change. Before, the update policy had no WITH CHECK and the grant covered
 --    every column, so a user could rewrite any field of their row, even its id.

@@ -1,3 +1,4 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -57,9 +58,21 @@ export default function ProfileScreen() {
 
   useEffect(() => load(), [load]);
 
+  // a "Guardado" or an error is about the last thing you did: don't keep it when you come back
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        setMessage(null);
+      },
+      [],
+    ),
+  );
+
   const checked = validateProfile({ name, description });
+  // compared after trimming on both sides, so stray spaces never count as a change
   const changed =
-    saved !== null && (checked.name !== saved.name || (checked.description ?? '') !== saved.description);
+    saved !== null &&
+    (checked.name !== saved.name.trim() || (checked.description ?? '') !== saved.description.trim());
 
   async function save() {
     if (!myId || !checked.valid) return;
@@ -78,9 +91,9 @@ export default function ProfileScreen() {
       if (error || !data?.length) {
         setMessage({ text: t('profile.saveFailed'), ok: false });
       } else {
+        // Only remember what was saved. The inputs are left alone: if you kept typing while the
+        // request was in flight, that text is still there (and counts as a new change).
         setSaved({ name: checked.name, description: checked.description ?? '' });
-        setName(checked.name);
-        setDescription(checked.description ?? '');
         setMessage({ text: t('profile.saved'), ok: true });
       }
     } catch {
@@ -151,12 +164,25 @@ export default function ProfileScreen() {
             <ThemedText themeColor={message.ok ? 'positive' : 'negative'}>{message.text}</ThemedText>
           )}
 
-          <Button
-            label={t('profile.save')}
-            onPress={save}
-            loading={saving}
-            disabled={!changed || !checked.valid}
-          />
+          {/* the profile could not be loaded: without it nothing can be edited, so offer a retry */}
+          {saved === null && message && (
+            <Button
+              label={t('common.retry')}
+              onPress={() => {
+                setMessage(null); // in the handler, not in the effect that loads
+                load();
+              }}
+            />
+          )}
+
+          {saved !== null && (
+            <Button
+              label={t('profile.save')}
+              onPress={save}
+              loading={saving}
+              disabled={!changed || !checked.valid}
+            />
+          )}
 
           <Pressable onPress={() => supabase.auth.signOut()}>
             {/* quiet on purpose: small, grey and regular weight, as in the mock-up */}
