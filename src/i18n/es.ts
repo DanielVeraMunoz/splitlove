@@ -30,6 +30,13 @@ export const es = {
   },
   profile: {
     title: 'Perfil',
+    nameLabel: 'Tu nombre',
+    descriptionLabel: 'Descripción',
+    descriptionPlaceholder: 'Una frase sobre ti',
+    save: 'Guardar',
+    saved: 'Guardado',
+    saveFailed: 'No se ha podido guardar. Revisa tu conexión e inténtalo de nuevo.',
+    loadError: 'No se ha podido cargar tu perfil. Revisa tu conexión.',
   },
   auth: {
     yourName: 'Tu nombre',
