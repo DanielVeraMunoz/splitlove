@@ -1,3 +1,4 @@
+import { describe, it, expect } from '@jest/globals';
 import { totalsByGroup, type DebtRow } from '../balance';
 
 const debt = (group: string, creditor: string, debtor: string, points: number): DebtRow => ({

@@ -24,7 +24,8 @@ for the data model.
 - `npx expo lint` - lint
 - `npx tsc --noEmit` - typecheck (passes clean)
 - `npm test` - unit tests (Jest, `jest-expo` preset). Tests live next to the code in
-  `__tests__/*.test.ts`. Pure logic (no React Native imports) gets a test when it is written.
+  `__tests__/*.test.ts` and import `describe/it/expect` from `@jest/globals` (no global types, so
+  they don't leak into app code). Pure logic (no React Native imports) gets a test when it is written.
 - Known lint error from the template, web only and not ours: `src/hooks/use-color-scheme.web.ts`
   (setState in an effect). Everything else must be clean.
 - Add dependencies with `npx expo install <pkg>`, never `npm install`.

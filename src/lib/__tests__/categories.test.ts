@@ -1,3 +1,4 @@
+import { describe, it, expect } from '@jest/globals';
 import { CATEGORY_IDS, detectCategory, isCategoryId } from '../categories';
 
 describe('detectCategory', () => {

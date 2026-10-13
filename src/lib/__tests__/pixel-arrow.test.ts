@@ -1,3 +1,4 @@
+import { describe, it, expect } from '@jest/globals';
 import { ARROW_HEIGHT, ARROW_PIXELS, ARROW_WIDTH, pathFor, type ArrowPart } from '../pixel-arrow';
 
 const SYMBOL: Record<ArrowPart, string> = { head: '#', shaft: '=', feather: '/' };
@@ -37,8 +38,9 @@ describe('pixel arrow', () => {
 
   it('joins the shaft to the head: no gap between them', () => {
     const shaftEnd = Math.max(...ARROW_PIXELS.filter((p) => p.part === 'shaft').map((p) => p.x));
+    const shaftRow = ARROW_PIXELS.find((p) => p.part === 'shaft')!.y;
     const headStartOnShaftRow = Math.min(
-      ...ARROW_PIXELS.filter((p) => p.part === 'head' && p.y === 4).map((p) => p.x),
+      ...ARROW_PIXELS.filter((p) => p.part === 'head' && p.y === shaftRow).map((p) => p.x),
     );
     expect(headStartOnShaftRow).toBe(shaftEnd + 1);
   });

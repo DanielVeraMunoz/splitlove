@@ -1,3 +1,4 @@
+import { describe, it, expect } from '@jest/globals';
 import { relativeTime } from '../relative-time';
 
 // LOCAL dates (year, month index, day, hour, minute, second): the rules are about the phone's
@@ -12,6 +13,11 @@ describe('relativeTime', () => {
     expect(relativeTime(at(12, 12, 0), NOW)).toEqual({ unit: 'now' });
     expect(relativeTime(at(12, 12, 0, 5), NOW)).toEqual({ unit: 'now' });
     expect(relativeTime(at(12, 11, 59, 1), NOW)).toEqual({ unit: 'now' });
+  });
+
+  it('treats any time in the future as "now" (the phone clock can lag the server)', () => {
+    expect(relativeTime(at(12, 12, 4), NOW)).toEqual({ unit: 'now' });
+    expect(relativeTime(at(12, 18, 0), NOW)).toEqual({ unit: 'now' });
   });
 
   it('counts minutes up to an hour', () => {
