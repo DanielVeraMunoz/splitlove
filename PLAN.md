@@ -43,9 +43,11 @@ Custom bottom bar (the native one can't host a button in the middle that isn't a
   month, as a line) and medals come later.
 - **Grupos**: the list of groups.
 - **Actividad**: feed of what happened in your groups (later also notifications).
-- **Perfil**: your data (name, email, description, your color) and the app settings (language;
+- **Perfil**: your data (editable name, short description, email) and the app settings (language;
   notifications need a real build). Deleting your account has to be possible from here:
   Apple requires it for apps with sign-up (check their guideline before submitting).
+  A personal color per member was considered and left out for now (maybe just a small dot in
+  the group scoreboard, later).
 
 ## Stack
 
